@@ -22,7 +22,7 @@ const PAGE = String.raw`<!doctype html>
     @media(max-width:560px){.main{padding:24px 12px 45px}.banner{align-items:flex-start;flex-direction:column}.head{align-items:flex-start;gap:12px}.pill{display:none}.stats{grid-template-columns:repeat(2,1fr)}.map{padding:14px 9px}.maptop h2{font-size:20px}.path{grid-template-columns:1fr 1fr}.card{padding:28px 19px}.play{padding:14px 10px}.answer{font-size:13px}}
   </style>
 </head>
-<body><div id="app"></div>
+<body><div id="app"><main class="main"><div class="banner"><b>公开测试</b><span>正在加载六分计划闯关地图…</span></div><section class="map" style="max-width:760px;margin:40px auto;padding:32px"><p class="eyebrow">六分计划</p><h1 style="margin:0 0 14px;font:700 38px Georgia,'Songti SC',serif">半年闯关，目标雅思 6 分</h1><p style="color:#697386;line-height:1.8">页面内容正在启动。如果这里一直没有变化，请刷新一次页面。</p></section></main></div>
 <script>
 const worlds=[['启航岛','建立习惯，摸清起点','#4ca797'],['定位森林','听懂信息，快速定位','#75a85a'],['逻辑山谷','看懂结构，说清观点','#c6924b'],['表达港湾','稳定口语和写作','#e67763'],['冲刺高原','提升速度，补齐弱项','#4d83ae'],['六分之巅','适应考场，最后冲刺','#806aaa']];
 const names=['认识雅思','句子地基','第一轮复习','起点挑战','信息定位','阅读寻路','薄弱点复习','定位挑战','段落逻辑','写作骨架','表达复习','结构挑战','听力跟速','口语展开','输出复习','表达挑战','长文攻坚','完整写作','高频错题复习','半程模考','速度稳定','考场表达','考前回收','六分终局'];
@@ -64,12 +64,10 @@ function handleRequest(request) {
   return new Response(PAGE, {
     headers: {
       "content-type": "text/html; charset=utf-8",
-      "cache-control": "public, max-age=300",
-      "content-security-policy": "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
+      "cache-control": "no-store, max-age=0",
       "referrer-policy": "no-referrer",
       "x-content-type-options": "nosniff",
       "x-frame-options": "DENY",
     },
   });
 }
-
