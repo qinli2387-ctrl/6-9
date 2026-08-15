@@ -15,7 +15,7 @@ Last updated: 2026-08-15
 - Added playable routes for weeks 1–4 with question-by-question progress, immediate explanations and result screens.
 - Added server-side answer scoring, one-time level XP, replay-safe best scores and sequential week unlocking.
 - Added a public `/demo` route for local product trials. Demo progress is intentionally browser-local and never mixed with authenticated cloud records.
-- Published a standalone Cloudflare Worker demo at `https://ielts-band-six-demo.qinli2387-ielts.workers.dev`. Its source is kept in `deploy/cloudflare-public-demo.js`; its progress is also browser-local.
+- Published the standalone Cloudflare demo at `https://band-six-demo.pages.dev` with `https://ielts-band-six-demo.qinli2387-ielts.workers.dev` as a secondary route. Its source is kept in `deploy/cloudflare-public-demo.js`; its progress is browser-local.
 - Added `docs/CONTENT_SOURCES.md` for the official IELTS format facts used in authored lesson questions.
 - Added this documentation so a new Codex session can resume without the old conversation.
 - Researched the game direction and selected a learning-first level map. See `docs/OPEN_SOURCE_REFERENCES.md`.
@@ -25,7 +25,7 @@ Last updated: 2026-08-15
 - Database migrations were generated and inspected.
 - The production build completed successfully on Windows.
 - A private Sites deployment was started, but the hosting service later returned `Sites project not found` while checking its status. Do not create a replacement Sites project until the existing platform state has been checked again.
-- The Cloudflare API confirms that the public Worker and its `workers.dev` route are enabled. This development computer currently times out when connecting to `workers.dev`, so verify the public address from a phone network or another computer before treating it as the permanent learner URL.
+- The Cloudflare API confirms that both deployments are enabled. This development computer times out on `workers.dev`, while `https://band-six-demo.pages.dev` returns HTTP 200, so use the Pages address as the primary public demo URL.
 - Publish or recover the private preview, then sign in.
 - Complete a task, open the site on another device, and confirm the completion remains visible.
 
@@ -35,6 +35,7 @@ Last updated: 2026-08-15
 - The source was pushed to the temporary Sites Git remote.
 - The durable GitHub handoff repository is `https://github.com/qinli2387-ctrl/6-9` and the working branch is `main`.
 - Cloudflare Worker name: `ielts-band-six-demo`; account subdomain: `qinli2387-ielts`.
+- Cloudflare Pages project: `band-six-demo`; primary demo domain: `band-six-demo.pages.dev`.
 - Never put account passwords or API secrets in the repository. Connect each Codex device with GitHub OAuth/repository permissions instead.
 
 ## Next implementation task

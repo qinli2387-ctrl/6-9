@@ -19,7 +19,8 @@ npm run build
 ## Public Demo
 
 The standalone level-map demo is deployed at
-[ielts-band-six-demo.qinli2387-ielts.workers.dev](https://ielts-band-six-demo.qinli2387-ielts.workers.dev).
+[band-six-demo.pages.dev](https://band-six-demo.pages.dev). A secondary
+`workers.dev` route also exists, but it is less reliable on some networks.
 Its deployment source lives in `deploy/cloudflare-public-demo.js`. Demo progress
 is stored in the current browser only; authenticated cross-device sync remains a
 separate production milestone.
