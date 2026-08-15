@@ -9,6 +9,9 @@ Last updated: 2026-08-15
 - Added ChatGPT sign-in flow for cross-device identity.
 - Added D1 schemas for learner profiles, daily tasks, study events, vocabulary cards and review logs.
 - Added server-owned task completion so one user cannot change another user's records.
+- Added authenticated onboarding for exam type, target date and daily study time.
+- Added the responsive 24-week level map with six worlds, review nodes and Boss nodes.
+- Added cloud level state, stars, XP and streak fields. Daily tasks award XP only once.
 - Added this documentation so a new Codex session can resume without the old conversation.
 - Researched the game direction and selected a learning-first level map. See `docs/OPEN_SOURCE_REFERENCES.md`.
 
@@ -29,4 +32,4 @@ Last updated: 2026-08-15
 
 ## Next implementation task
 
-Build the 24-week visual level-map shell, then onboarding: exam type, target date, daily study minutes, and the first diagnostic flow. After onboarding, replace the seeded sample tasks with generated map levels.
+Build the first real week-one lesson flow and connect its completion to level unlocking. Then add `ts-fsrs`, seed the first vocabulary cards, and generate review levels from due cards instead of fixed sample tasks.

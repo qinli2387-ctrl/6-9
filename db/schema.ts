@@ -9,6 +9,10 @@ export const learnerProfiles = sqliteTable("learner_profiles", {
   targetBand: real("target_band").notNull().default(6),
   examDate: text("exam_date"),
   dailyMinutes: integer("daily_minutes").notNull().default(60),
+  onboardingCompleted: integer("onboarding_completed", { mode: "boolean" }).notNull().default(false),
+  currentWeek: integer("current_week").notNull().default(1),
+  totalXp: integer("total_xp").notNull().default(0),
+  streakDays: integer("streak_days").notNull().default(0),
   timezone: text("timezone").notNull().default("Asia/Shanghai"),
   createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
   updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
@@ -26,12 +30,32 @@ export const dailyTasks = sqliteTable(
     minutes: integer("minutes").notNull(),
     status: text("status").notNull().default("todo"),
     position: integer("position").notNull().default(0),
+    xpAwarded: integer("xp_awarded", { mode: "boolean" }).notNull().default(false),
     completedAt: text("completed_at"),
     createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => [
     index("idx_daily_tasks_user_date").on(table.userId, table.taskDate),
     uniqueIndex("ux_daily_tasks_user_date_position").on(table.userId, table.taskDate, table.position),
+  ],
+);
+
+export const levelProgress = sqliteTable(
+  "level_progress",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    userId: text("user_id").notNull(),
+    levelKey: text("level_key").notNull(),
+    status: text("status").notNull().default("locked"),
+    stars: integer("stars").notNull().default(0),
+    bestScore: real("best_score"),
+    attempts: integer("attempts").notNull().default(0),
+    completedAt: text("completed_at"),
+    updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  },
+  (table) => [
+    uniqueIndex("ux_level_progress_user_level").on(table.userId, table.levelKey),
+    index("idx_level_progress_user_status").on(table.userId, table.status),
   ],
 );
 

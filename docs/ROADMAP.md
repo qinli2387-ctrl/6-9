@@ -11,18 +11,18 @@
 
 ## Phase 2 — Diagnostic and planning
 
-- [ ] Academic/General Training choice, target date and daily study time
+- [x] Academic/General Training choice, target date and daily study time
 - [ ] Listening, reading, writing and speaking placement flow
 - [ ] Generate the initial 24-week plan
 - [ ] Weekly plan recalculation
 
 ## Phase 2.5 — Visual level map
 
-- [ ] 24-week zigzag map split into 6 themed worlds
-- [ ] Locked, active, passed and mastered level states
-- [ ] Stars, XP, streak and world completion progress
+- [x] 24-week zigzag map split into 6 themed worlds
+- [x] Locked, active, passed and mastered level states
+- [x] Stars, XP, streak and world completion progress foundation
 - [ ] Review levels generated from due errors and vocabulary
-- [ ] Boss mock test at the end of each four-week world
+- [x] Boss mock test nodes at the end of each four-week world
 - [ ] Optional match-3 vocabulary mini-game prototype
 
 ## Phase 3 — Vocabulary and errors
