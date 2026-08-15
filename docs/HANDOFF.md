@@ -42,6 +42,7 @@ Last updated: 2026-08-15
 - Local Git history is initialized and clean as of the first application commit.
 - The source was pushed to the temporary Sites Git remote.
 - The durable GitHub handoff repository is `https://github.com/qinli2387-ctrl/6-9` and the working branch is `main`.
+- Research audit and FSRS vocabulary work were pushed to GitHub in commit `295b0b6`.
 - Cloudflare Worker name: `ielts-band-six-demo`; account subdomain: `qinli2387-ielts`.
 - Cloudflare Pages project: `band-six-demo`; primary demo domain: `band-six-demo.pages.dev`.
 - Never put account passwords or API secrets in the repository. Connect each Codex device with GitHub OAuth/repository permissions instead.
