@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX `ux_daily_tasks_user_date_position` ON `daily_tasks` (`user_id`,`task_date`,`position`);
