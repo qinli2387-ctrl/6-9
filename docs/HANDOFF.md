@@ -14,10 +14,18 @@ Last updated: 2026-08-15
 
 ## Verify before continuing
 
-- Generate and inspect the first database migration.
-- Run the production build.
-- Publish the private preview and sign in.
+- Database migrations were generated and inspected.
+- The production build completed successfully on Windows.
+- A private Sites deployment was started, but the hosting service later returned `Sites project not found` while checking its status. Do not create a replacement project until the existing platform state has been checked again.
+- Publish or recover the private preview, then sign in.
 - Complete a task, open the site on another device, and confirm the completion remains visible.
+
+## Source handoff status
+
+- Local Git history is initialized and clean as of the first application commit.
+- The source was pushed to the temporary Sites Git remote.
+- A private GitHub repository is still required for durable cross-computer Codex handoff.
+- Never put account passwords or API secrets in the repository. Connect each Codex device with GitHub OAuth/repository permissions instead.
 
 ## Next implementation task
 
