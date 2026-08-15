@@ -12,6 +12,9 @@ Last updated: 2026-08-15
 - Added authenticated onboarding for exam type, target date and daily study time.
 - Added the responsive 24-week level map with six worlds, review nodes and Boss nodes.
 - Added cloud level state, stars, XP and streak fields. Daily tasks award XP only once.
+- Added playable routes for weeks 1–4 with question-by-question progress, immediate explanations and result screens.
+- Added server-side answer scoring, one-time level XP, replay-safe best scores and sequential week unlocking.
+- Added `docs/CONTENT_SOURCES.md` for the official IELTS format facts used in authored lesson questions.
 - Added this documentation so a new Codex session can resume without the old conversation.
 - Researched the game direction and selected a learning-first level map. See `docs/OPEN_SOURCE_REFERENCES.md`.
 
@@ -32,4 +35,4 @@ Last updated: 2026-08-15
 
 ## Next implementation task
 
-Build the first real week-one lesson flow and connect its completion to level unlocking. Then add `ts-fsrs`, seed the first vocabulary cards, and generate review levels from due cards instead of fixed sample tasks.
+Add `ts-fsrs`, seed the first vocabulary cards, and generate review levels from due cards instead of fixed sample tasks. After that, author the second four-week world using licensed or original practice material.

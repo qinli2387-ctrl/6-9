@@ -21,6 +21,8 @@
 - [x] 24-week zigzag map split into 6 themed worlds
 - [x] Locked, active, passed and mastered level states
 - [x] Stars, XP, streak and world completion progress foundation
+- [x] Playable level session, instant feedback, score settlement and sequential unlocking
+- [x] First four-week world with training, review and Boss levels
 - [ ] Review levels generated from due errors and vocabulary
 - [x] Boss mock test nodes at the end of each four-week world
 - [ ] Optional match-3 vocabulary mini-game prototype

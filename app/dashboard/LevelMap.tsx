@@ -1,4 +1,5 @@
 import { planWorlds } from "@/lib/learning-plan";
+import { playableWeeks } from "@/lib/level-lessons";
 
 type ProgressRecord = {
   levelKey: string;
@@ -15,11 +16,13 @@ function statusLabel(status: string) {
 
 export function LevelMap({ currentWeek, progress }: { currentWeek: number; progress: ProgressRecord[] }) {
   const saved = new Map(progress.map((item) => [item.levelKey, item]));
+  const completedWeeks = progress.filter((item) => item.status === "passed" || item.status === "mastered").length;
+  const overallPercent = Math.round((completedWeeks / 24) * 100);
 
   return (
     <section className="map-panel" aria-labelledby="map-title">
       <div className="map-heading">
-        <div><p className="eyebrow">24周闯关路线</p><h2 id="map-title">从起点走到六分之巅</h2></div>
+        <div className="map-title-block"><p className="eyebrow">24周闯关路线</p><h2 id="map-title">从起点走到六分之巅</h2><div className="map-overall"><span><i style={{ width: `${overallPercent}%` }} /></span><small>{completedWeeks}/24 周</small></div></div>
         <a href="/onboarding">调整计划</a>
       </div>
       <div className="world-list">
@@ -40,6 +43,7 @@ export function LevelMap({ currentWeek, progress }: { currentWeek: number; progr
                   const record = saved.get(level.key);
                   const inferred = level.week < currentWeek ? "passed" : level.week === currentWeek ? "active" : "locked";
                   const status = record?.status ?? inferred;
+                  const playable = playableWeeks.has(level.week);
                   const content = (
                     <>
                       <span className="level-orbit" aria-hidden="true">
@@ -51,13 +55,15 @@ export function LevelMap({ currentWeek, progress }: { currentWeek: number; progr
                         <span>{level.focus}</span>
                       </span>
                       <span className="level-result" aria-label={`${record?.stars ?? 0}颗星`}>
-                        {status === "locked" ? "锁" : status === "active" ? "开始" : `${"★".repeat(record?.stars || 1)}${"☆".repeat(3 - (record?.stars || 1))}`}
+                        {status === "locked" ? "锁" : status === "active" ? (playable ? "开始" : "待开放") : `${"★".repeat(record?.stars || 1)}${"☆".repeat(3 - (record?.stars || 1))}`}
                       </span>
                     </>
                   );
                   return (
                     <li className={`level-row ${status} ${level.kind}`} key={level.key}>
-                      {status === "active" ? <a href="#today" aria-current="step" aria-label={`当前关卡：第${level.week}周 ${level.title}`}>{content}</a> : <div aria-label={`第${level.week}周 ${level.title}，${statusLabel(status)}`}>{content}</div>}
+                      {status !== "locked" && playable
+                        ? <a href={`/levels/${level.week}`} aria-current={status === "active" ? "step" : undefined} aria-label={`${status === "active" ? "当前关卡" : "重玩关卡"}：第${level.week}周 ${level.title}`}>{content}</a>
+                        : <div aria-label={`第${level.week}周 ${level.title}，${statusLabel(status)}`}>{content}</div>}
                     </li>
                   );
                 })}
@@ -69,4 +75,3 @@ export function LevelMap({ currentWeek, progress }: { currentWeek: number; progr
     </section>
   );
 }
-
