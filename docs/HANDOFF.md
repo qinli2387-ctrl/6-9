@@ -27,7 +27,7 @@ Last updated: 2026-08-15
 
 - Local Git history is initialized and clean as of the first application commit.
 - The source was pushed to the temporary Sites Git remote.
-- A private GitHub repository is still required for durable cross-computer Codex handoff.
+- The durable GitHub handoff repository is `https://github.com/qinli2387-ctrl/6-9` and the working branch is `main`.
 - Never put account passwords or API secrets in the repository. Connect each Codex device with GitHub OAuth/repository permissions instead.
 
 ## Next implementation task

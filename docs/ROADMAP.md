@@ -7,7 +7,7 @@
 - [x] Cloud learner profile and daily-task schema
 - [x] Authenticated dashboard and cloud task completion
 - [ ] Publish private preview and verify cross-device login
-- [ ] Connect a private Git repository
+- [x] Connect the GitHub repository for cross-computer handoff
 
 ## Phase 2 — Diagnostic and planning
 
