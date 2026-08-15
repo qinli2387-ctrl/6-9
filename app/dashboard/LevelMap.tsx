@@ -14,7 +14,7 @@ function statusLabel(status: string) {
   return "未解锁";
 }
 
-export function LevelMap({ currentWeek, progress }: { currentWeek: number; progress: ProgressRecord[] }) {
+export function LevelMap({ currentWeek, progress, demoMode = false }: { currentWeek: number; progress: ProgressRecord[]; demoMode?: boolean }) {
   const saved = new Map(progress.map((item) => [item.levelKey, item]));
   const completedWeeks = progress.filter((item) => item.status === "passed" || item.status === "mastered").length;
   const overallPercent = Math.round((completedWeeks / 24) * 100);
@@ -62,7 +62,7 @@ export function LevelMap({ currentWeek, progress }: { currentWeek: number; progr
                   return (
                     <li className={`level-row ${status} ${level.kind}`} key={level.key}>
                       {status !== "locked" && playable
-                        ? <a href={`/levels/${level.week}`} aria-current={status === "active" ? "step" : undefined} aria-label={`${status === "active" ? "当前关卡" : "重玩关卡"}：第${level.week}周 ${level.title}`}>{content}</a>
+                        ? <a href={`${demoMode ? "/demo/levels" : "/levels"}/${level.week}`} aria-current={status === "active" ? "step" : undefined} aria-label={`${status === "active" ? "当前关卡" : "重玩关卡"}：第${level.week}周 ${level.title}`}>{content}</a>
                         : <div aria-label={`第${level.week}周 ${level.title}，${statusLabel(status)}`}>{content}</div>}
                     </li>
                   );

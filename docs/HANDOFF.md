@@ -14,6 +14,7 @@ Last updated: 2026-08-15
 - Added cloud level state, stars, XP and streak fields. Daily tasks award XP only once.
 - Added playable routes for weeks 1–4 with question-by-question progress, immediate explanations and result screens.
 - Added server-side answer scoring, one-time level XP, replay-safe best scores and sequential week unlocking.
+- Added a public `/demo` route for local product trials. Demo progress is intentionally browser-local and never mixed with authenticated cloud records.
 - Added `docs/CONTENT_SOURCES.md` for the official IELTS format facts used in authored lesson questions.
 - Added this documentation so a new Codex session can resume without the old conversation.
 - Researched the game direction and selected a learning-first level map. See `docs/OPEN_SOURCE_REFERENCES.md`.
