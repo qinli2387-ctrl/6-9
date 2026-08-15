@@ -84,13 +84,19 @@ export const vocabCards = sqliteTable(
     dueAt: text("due_at").notNull().default(sql`CURRENT_TIMESTAMP`),
     stability: real("stability").notNull().default(0),
     difficulty: real("difficulty").notNull().default(0),
+    elapsedDays: integer("elapsed_days").notNull().default(0),
+    scheduledDays: integer("scheduled_days").notNull().default(0),
+    learningSteps: integer("learning_steps").notNull().default(0),
     state: integer("state").notNull().default(0),
     reps: integer("reps").notNull().default(0),
     lapses: integer("lapses").notNull().default(0),
     lastReviewAt: text("last_review_at"),
     createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
   },
-  (table) => [index("idx_vocab_cards_user_due").on(table.userId, table.dueAt)],
+  (table) => [
+    index("idx_vocab_cards_user_due").on(table.userId, table.dueAt),
+    uniqueIndex("ux_vocab_cards_user_word").on(table.userId, table.word),
+  ],
 );
 
 export const vocabReviews = sqliteTable(
@@ -100,7 +106,18 @@ export const vocabReviews = sqliteTable(
     userId: text("user_id").notNull(),
     cardId: integer("card_id").notNull(),
     rating: integer("rating").notNull(),
+    state: integer("state").notNull(),
+    dueAt: text("due_at").notNull(),
+    stability: real("stability").notNull(),
+    difficulty: real("difficulty").notNull(),
+    elapsedDays: integer("elapsed_days").notNull().default(0),
+    lastElapsedDays: integer("last_elapsed_days").notNull().default(0),
+    scheduledDays: integer("scheduled_days").notNull().default(0),
+    learningSteps: integer("learning_steps").notNull().default(0),
     reviewedAt: text("reviewed_at").notNull().default(sql`CURRENT_TIMESTAMP`),
   },
-  (table) => [index("idx_vocab_reviews_card_time").on(table.cardId, table.reviewedAt)],
+  (table) => [
+    index("idx_vocab_reviews_card_time").on(table.cardId, table.reviewedAt),
+    index("idx_vocab_reviews_user_time").on(table.userId, table.reviewedAt),
+  ],
 );

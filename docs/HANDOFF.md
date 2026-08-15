@@ -18,6 +18,11 @@ Last updated: 2026-08-15
 - Published the standalone Cloudflare demo at `https://band-six-demo.pages.dev` with `https://ielts-band-six-demo.qinli2387-ielts.workers.dev` as a secondary route. Its source is kept in `deploy/cloudflare-public-demo.js`; its progress is browser-local.
 - Reworked the public demo to server-render the map, lesson intro, five-question flow, explanations and result page. This avoids the blank/loading screen caused when some embedded browsers do not execute client-side scripts.
 - Added `docs/CONTENT_SOURCES.md` for the official IELTS format facts used in authored lesson questions.
+- Completed a research and product audit covering official IELTS requirements, learning science, gamification, accessibility and open-source licensing. See `docs/RESEARCH_AUDIT_2026-08-15.md`.
+- Added `ts-fsrs` 5.4.1, twelve original starter vocabulary cards, a cloud due-card queue and the four FSRS review ratings.
+- Added the authenticated `/vocabulary` flow and `/api/vocabulary/review`. All card reads, updates, review logs and task completion writes are scoped to the authenticated `userId`.
+- Expanded the D1 schema and migration with the full FSRS scheduling state and review-log fields. Finishing the due queue automatically completes the vocabulary task and awards XP once.
+- Added `/demo/vocabulary` for local interaction and phone-layout verification without touching learner cloud records.
 - Added this documentation so a new Codex session can resume without the old conversation.
 - Researched the game direction and selected a learning-first level map. See `docs/OPEN_SOURCE_REFERENCES.md`.
 
@@ -28,6 +33,7 @@ Last updated: 2026-08-15
 - A private Sites deployment was started, but the hosting service later returned `Sites project not found` while checking its status. Do not create a replacement Sites project until the existing platform state has been checked again.
 - The Cloudflare API confirms that both deployments are enabled. This development computer times out on `workers.dev`, while `https://band-six-demo.pages.dev` returns HTTP 200, so use the Pages address as the primary public demo URL.
 - Cloudflare Browser Rendering verified the live mobile page at 430×900, then verified the first-level intro, question form, correct-answer explanation and 100-point result page using visible selectors.
+- The new vocabulary route passed a production build, targeted lint, the rendered landing-page regression test, and a real Chrome smoke test at 430×900. The smoke test revealed a card, verified all four rating controls, selected “记得”, loaded the next card and confirmed progress changed to 1/3.
 - Publish or recover the private preview, then sign in.
 - Complete a task, open the site on another device, and confirm the completion remains visible.
 
@@ -42,4 +48,4 @@ Last updated: 2026-08-15
 
 ## Next implementation task
 
-Add `ts-fsrs`, seed the first vocabulary cards, and generate review levels from due cards instead of fixed sample tasks. After that, author the second four-week world using licensed or original practice material.
+Build the four-skill placement flow and use its results to set initial training weights. Then add the reading/listening error taxonomy and generate review levels from due cards and mistakes. The first match-3 prototype should consume that same due-card queue rather than maintain a separate game score.

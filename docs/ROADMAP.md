@@ -29,8 +29,8 @@
 
 ## Phase 3 — Vocabulary and errors
 
-- [ ] Add ts-fsrs scheduler
-- [ ] Four review ratings and due-card queue
+- [x] Add ts-fsrs scheduler
+- [x] Four review ratings and due-card queue
 - [ ] Reading/listening error taxonomy and error book
 
 ## Phase 4 — Productive skills

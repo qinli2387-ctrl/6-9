@@ -49,9 +49,13 @@ export function DashboardClient({ tasks }: { tasks: DailyTask[] }) {
             <span className={`task-icon ${meta.className}`}>{meta.label}</span>
             <div className="live-task-copy"><strong>{task.title}</strong><small>{task.detail}</small></div>
             <span className="live-minutes">{task.minutes} 分钟</span>
-            <button className="task-toggle" onClick={() => toggleTask(task)} disabled={savingId === task.id} aria-label={done ? `将${task.title}标记为未完成` : `完成${task.title}`}>
-              {savingId === task.id ? "…" : done ? "✓" : "完成"}
-            </button>
+            {task.skill === "vocabulary" && !done ? (
+              <a className="task-toggle task-start" href="/vocabulary" aria-label={`开始${task.title}`}>开始</a>
+            ) : (
+              <button className="task-toggle" onClick={() => toggleTask(task)} disabled={savingId === task.id} aria-label={done ? `将${task.title}标记为未完成` : `完成${task.title}`}>
+                {savingId === task.id ? "…" : done ? "✓" : "完成"}
+              </button>
+            )}
           </article>
         );
       })}

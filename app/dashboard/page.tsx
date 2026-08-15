@@ -1,7 +1,9 @@
-import { and, asc, eq } from "drizzle-orm";
+import { and, asc, count, eq, sql } from "drizzle-orm";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getDb } from "@/db";
-import { dailyTasks, learnerProfiles, levelProgress } from "@/db/schema";
+import { dailyTasks, learnerProfiles, levelProgress, vocabCards } from "@/db/schema";
+import { ensureStarterVocabulary } from "@/lib/vocabulary";
 import { chatGPTSignOutPath, requireChatGPTUser } from "../chatgpt-auth";
 import { DashboardClient } from "./DashboardClient";
 import { LevelMap } from "./LevelMap";
@@ -54,12 +56,20 @@ async function loadDashboard(user: { userId: string; email: string; displayName:
     stars: levelProgress.stars,
   }).from(levelProgress).where(eq(levelProgress.userId, user.userId));
 
-  return { profile, tasks, progress };
+  await ensureStarterVocabulary(user.userId);
+  const [dueResult] = await db.select({ value: count() }).from(vocabCards).where(and(
+    eq(vocabCards.userId, user.userId),
+    sql`datetime(${vocabCards.dueAt}) <= datetime(${new Date().toISOString()})`,
+  ));
+  const vocabularyDetail = dueResult.value > 0 ? `${dueResult.value}个词等待复习` : "今日到期词卡已完成";
+  tasks = tasks.map((task) => task.skill === "vocabulary" ? { ...task, detail: vocabularyDetail } : task);
+
+  return { profile, tasks, progress, dueVocabulary: dueResult.value };
 }
 
 export default async function DashboardPage() {
   const user = await requireChatGPTUser("/dashboard");
-  const { profile, tasks, progress } = await loadDashboard(user);
+  const { profile, tasks, progress, dueVocabulary } = await loadDashboard(user);
   const completedMinutes = tasks.filter((task) => task.status === "done").reduce((sum, task) => sum + task.minutes, 0);
   const totalMinutes = tasks.reduce((sum, task) => sum + task.minutes, 0);
   const percent = totalMinutes ? Math.round((completedMinutes / totalMinutes) * 100) : 0;
@@ -68,11 +78,11 @@ export default async function DashboardPage() {
   return (
     <main className="app-shell">
       <aside className="sidebar">
-        <a className="brand" href="/"><span className="brand-mark">6</span><span>六分计划</span></a>
+        <Link className="brand" href="/"><span className="brand-mark">6</span><span>六分计划</span></Link>
         <nav className="side-nav" aria-label="学习功能">
           <a className="active" href="/dashboard">闯关地图</a>
           <a href="#today">今日训练</a>
-          <a href="#future">词汇复习</a>
+          <a href="/vocabulary">词汇复习</a>
           <a href="#future">错题本</a>
           <a href="/onboarding">目标设置</a>
         </nav>
@@ -108,11 +118,15 @@ export default async function DashboardPage() {
               <div className="mini-stat"><span>下一次解锁</span><strong>完成今日任务</strong></div>
               <div className="coach-note"><span>教练建议</span><p>先做当前关卡，不必一次看完整张地图。错题会自动进入后面的复习关。</p></div>
             </section>
-            <section className="coming-panel rail-coming" id="future"><p className="eyebrow">即将开放</p><h2>FSRS词汇复习</h2><p>下一阶段把遗忘曲线、错题和动态复习关正式连接起来。</p></section>
+            <section className="coming-panel rail-coming vocab-entry" id="future">
+              <p className="eyebrow">智能复习</p>
+              <h2>{dueVocabulary > 0 ? `${dueVocabulary} 个词今天到期` : "今天的词卡已清空"}</h2>
+              <p>用“忘记、困难、记得、简单”反馈真实回忆情况，FSRS 会自动计算下次复习时间。</p>
+              <a className="level-primary" href="/vocabulary">{dueVocabulary > 0 ? "开始词汇复习" : "查看复习计划"}</a>
+            </section>
           </aside>
         </div>
       </section>
     </main>
   );
 }
-

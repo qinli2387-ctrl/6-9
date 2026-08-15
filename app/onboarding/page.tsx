@@ -1,4 +1,5 @@
 import { eq } from "drizzle-orm";
+import Link from "next/link";
 import { getDb } from "@/db";
 import { learnerProfiles } from "@/db/schema";
 import { requireChatGPTUser } from "../chatgpt-auth";
@@ -36,9 +37,9 @@ export default async function OnboardingPage() {
 
   return (
     <main className="onboarding-shell">
-      <a className="brand onboarding-brand" href="/">
+      <Link className="brand onboarding-brand" href="/">
         <span className="brand-mark">6</span><span>六分计划</span>
-      </a>
+      </Link>
       <section className="onboarding-card">
         <div className="onboarding-copy">
           <p className="eyebrow">第 1 步 · 建立你的路线</p>

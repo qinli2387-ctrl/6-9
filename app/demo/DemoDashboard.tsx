@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { LevelMap } from "@/app/dashboard/LevelMap";
 
 type DemoProgress = { levelKey: string; status: string; stars: number };
@@ -13,12 +14,15 @@ export function DemoDashboard() {
   const [demo, setDemo] = useState<DemoState>(initialState);
 
   useEffect(() => {
-    try {
-      const saved = JSON.parse(localStorage.getItem(storageKey) ?? "null") as DemoState | null;
-      if (saved) setDemo(saved);
-    } catch {
-      localStorage.removeItem(storageKey);
-    }
+    const frame = requestAnimationFrame(() => {
+      try {
+        const saved = JSON.parse(localStorage.getItem(storageKey) ?? "null") as DemoState | null;
+        if (saved) setDemo(saved);
+      } catch {
+        localStorage.removeItem(storageKey);
+      }
+    });
+    return () => cancelAnimationFrame(frame);
   }, []);
 
   function resetDemo() {
@@ -29,8 +33,8 @@ export function DemoDashboard() {
   return (
     <main className="app-shell demo-app-shell">
       <aside className="sidebar">
-        <a className="brand" href="/"><span className="brand-mark">6</span><span>六分计划</span></a>
-        <nav className="side-nav" aria-label="体验导航"><a className="active" href="/demo">闯关地图</a><a href="#demo-help">体验说明</a><a href="/">返回首页</a></nav>
+        <Link className="brand" href="/"><span className="brand-mark">6</span><span>六分计划</span></Link>
+        <nav className="side-nav" aria-label="体验导航"><a className="active" href="/demo">闯关地图</a><a href="#demo-help">体验说明</a><Link href="/">返回首页</Link></nav>
         <button className="demo-reset" onClick={resetDemo}>重置体验进度</button>
       </aside>
       <section className="dashboard-main">
@@ -53,4 +57,3 @@ export function DemoDashboard() {
     </main>
   );
 }
-

@@ -35,7 +35,7 @@ const demoStorageKey = "band-six-demo-progress";
 
 export function LevelSession({ week, worldName, title, focus, kind, lesson, bestStars, bestScore, demoMode = false }: Props) {
   const router = useRouter();
-  const startedAt = useRef(Date.now());
+  const startedAt = useRef(0);
   const [mode, setMode] = useState<"briefing" | "questions" | "result">("briefing");
   const [questionIndex, setQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<number[]>([]);
