@@ -16,6 +16,14 @@ npm run dev
 npm run build
 ```
 
+## Public Demo
+
+The standalone level-map demo is deployed at
+[ielts-band-six-demo.qinli2387-ielts.workers.dev](https://ielts-band-six-demo.qinli2387-ielts.workers.dev).
+Its deployment source lives in `deploy/cloudflare-public-demo.js`. Demo progress
+is stored in the current browser only; authenticated cross-device sync remains a
+separate production milestone.
+
 This starter does not use `wrangler.jsonc`.
 
 ## Included Shape
