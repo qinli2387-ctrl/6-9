@@ -23,7 +23,7 @@ const PAGE = String.raw`<!doctype html>
   </style>
 </head>
 <body><div id="app"><main class="main"><div class="banner"><b>公开测试</b><span>正在加载六分计划闯关地图…</span></div><section class="map" style="max-width:760px;margin:40px auto;padding:32px"><p class="eyebrow">六分计划</p><h1 style="margin:0 0 14px;font:700 38px Georgia,'Songti SC',serif">半年闯关，目标雅思 6 分</h1><p style="color:#697386;line-height:1.8">页面内容正在启动。如果这里一直没有变化，请刷新一次页面。</p></section></main></div>
-<script>
+<script id="app-code" type="text/plain">
 const worlds=[['启航岛','建立习惯，摸清起点','#4ca797'],['定位森林','听懂信息，快速定位','#75a85a'],['逻辑山谷','看懂结构，说清观点','#c6924b'],['表达港湾','稳定口语和写作','#e67763'],['冲刺高原','提升速度，补齐弱项','#4d83ae'],['六分之巅','适应考场，最后冲刺','#806aaa']];
 const names=['认识雅思','句子地基','第一轮复习','起点挑战','信息定位','阅读寻路','薄弱点复习','定位挑战','段落逻辑','写作骨架','表达复习','结构挑战','听力跟速','口语展开','输出复习','表达挑战','长文攻坚','完整写作','高频错题复习','半程模考','速度稳定','考场表达','考前回收','六分终局'];
 const lessons={
@@ -48,7 +48,12 @@ function next(){session.answers.push(session.selected);const l=lessons[session.w
 function finish(){const l=lessons[session.week],correct=l.qs.reduce((n,q,i)=>n+(session.answers[i]===q[2]?1:0),0),score=Math.round(correct/l.qs.length*100),passed=score>=60,s=score===100?3:score>=80?2:passed?1:0,old=state.progress[session.week],first=passed&&!(old&&old.passed),xp=first?(20+s*10+(session.week%4===0?20:0)):0;if(passed){state.progress[session.week]={passed:true,stars:Math.max(old?old.stars:0,s)};if(session.week===state.week)state.week=Math.min(24,session.week+1);state.xp+=xp;save()}renderResult(score,correct,passed,s,xp)}
 function renderResult(score,correct,passed,s,xp){let starHtml='';for(let i=1;i<=3;i++)starHtml+='<span class="'+(i<=s?'on':'')+'">★</span>';document.getElementById('app').innerHTML=top(100)+'<article class="card result"><p class="eyebrow">'+(passed?'挑战成功':'继续加油')+'</p><h1>'+(passed?'新路线已解锁！':'差一点就过关了')+'</h1><div class="bigstars">'+starHtml+'</div><strong class="score">'+score+'<small>分</small></strong><p>答对 '+correct+'/5 题'+(xp?', 获得 '+xp+' XP':'')+'</p><div class="actions"><button class="primary" onclick="'+(passed?'renderMap()':'start('+session.week+')')+'">'+(passed?'查看新地图':'重新挑战')+'</button>'+(passed&&session.week<4?'<button class="secondary" onclick="start('+(session.week+1)+')">直接进入下一关</button>':'')+'</div></article></div>'}
 function resetAll(){if(confirm('确定重置体验进度吗？')){localStorage.removeItem(key);state=load();renderMap()}}renderMap();
-</script></body></html>`;
+</script><script src="/app.js"></script></body></html>`;
+
+const SCRIPT_MARKER = '<script id="app-code" type="text/plain">';
+const SCRIPT_START = PAGE.indexOf(SCRIPT_MARKER) + SCRIPT_MARKER.length;
+const SCRIPT_END = PAGE.indexOf("</script>", SCRIPT_START);
+const APP_SCRIPT = PAGE.slice(SCRIPT_START, SCRIPT_END);
 
 addEventListener("fetch", (event) => {
   event.respondWith(handleRequest(event.request));
@@ -59,6 +64,15 @@ function handleRequest(request) {
   if (url.pathname === "/health") {
     return new Response(JSON.stringify({ ok: true, app: "band-six-demo" }), {
       headers: { "content-type": "application/json; charset=utf-8" },
+    });
+  }
+  if (url.pathname === "/app.js") {
+    return new Response(APP_SCRIPT, {
+      headers: {
+        "content-type": "application/javascript; charset=utf-8",
+        "cache-control": "no-store, max-age=0",
+        "x-content-type-options": "nosniff",
+      },
     });
   }
   return new Response(PAGE, {
