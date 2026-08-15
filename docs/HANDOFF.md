@@ -16,6 +16,7 @@ Last updated: 2026-08-15
 - Added server-side answer scoring, one-time level XP, replay-safe best scores and sequential week unlocking.
 - Added a public `/demo` route for local product trials. Demo progress is intentionally browser-local and never mixed with authenticated cloud records.
 - Published the standalone Cloudflare demo at `https://band-six-demo.pages.dev` with `https://ielts-band-six-demo.qinli2387-ielts.workers.dev` as a secondary route. Its source is kept in `deploy/cloudflare-public-demo.js`; its progress is browser-local.
+- Reworked the public demo to server-render the map, lesson intro, five-question flow, explanations and result page. This avoids the blank/loading screen caused when some embedded browsers do not execute client-side scripts.
 - Added `docs/CONTENT_SOURCES.md` for the official IELTS format facts used in authored lesson questions.
 - Added this documentation so a new Codex session can resume without the old conversation.
 - Researched the game direction and selected a learning-first level map. See `docs/OPEN_SOURCE_REFERENCES.md`.
@@ -26,6 +27,7 @@ Last updated: 2026-08-15
 - The production build completed successfully on Windows.
 - A private Sites deployment was started, but the hosting service later returned `Sites project not found` while checking its status. Do not create a replacement Sites project until the existing platform state has been checked again.
 - The Cloudflare API confirms that both deployments are enabled. This development computer times out on `workers.dev`, while `https://band-six-demo.pages.dev` returns HTTP 200, so use the Pages address as the primary public demo URL.
+- Cloudflare Browser Rendering verified the live mobile page at 430×900, then verified the first-level intro, question form, correct-answer explanation and 100-point result page using visible selectors.
 - Publish or recover the private preview, then sign in.
 - Complete a task, open the site on another device, and confirm the completion remains visible.
 
