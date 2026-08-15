@@ -55,6 +55,108 @@ const SCRIPT_START = PAGE.indexOf(SCRIPT_MARKER) + SCRIPT_MARKER.length;
 const SCRIPT_END = PAGE.indexOf("</script>", SCRIPT_START);
 const APP_SCRIPT = PAGE.slice(SCRIPT_START, SCRIPT_END);
 
+const SERVER_WORLDS = [
+  ["启航岛", "建立习惯，摸清起点", "#4ca797"],
+  ["定位森林", "听懂信息，快速定位", "#75a85a"],
+  ["逻辑山谷", "看懂结构，说清观点", "#c6924b"],
+  ["表达港湾", "稳定口语和写作", "#e67763"],
+  ["冲刺高原", "提升速度，补齐弱项", "#4d83ae"],
+  ["六分之巅", "适应考场，最后冲刺", "#806aaa"],
+];
+
+const SERVER_NAMES = ["认识雅思", "句子地基", "第一轮复习", "起点挑战", "信息定位", "阅读寻路", "薄弱点复习", "定位挑战", "段落逻辑", "写作骨架", "表达复习", "结构挑战", "听力跟速", "口语展开", "输出复习", "表达挑战", "长文攻坚", "完整写作", "高频错题复习", "半程模考", "速度稳定", "考场表达", "考前回收", "六分终局"];
+
+const SERVER_LESSONS = {
+  1: { title: "认识雅思", tip: "先看懂考试，再开始刷题。", questions: [
+    ["雅思完整考试包含哪四项？", ["词汇、语法、翻译、写作", "听力、阅读、写作、口语", "听写、阅读、作文、面试", "语法、阅读、口译、写作"], 1, "总分由听力、阅读、写作和口语四个单项共同构成。"],
+    ["雅思听力的答案通常怎样出现？", ["完全随机", "按录音信息顺序出现", "先出现最后一题", "只在结尾出现"], 1, "听力答案通常跟随录音中的信息顺序。"],
+    ["学术类与培训类哪两项相同？", ["阅读和写作", "听力和口语", "听力和阅读", "写作和口语"], 1, "两种考试的听力与口语相同。"],
+    ["写作中哪项权重更高？", ["Task 1", "Task 2", "完全相同", "只看字数"], 1, "Task 2 对写作成绩的贡献约为 Task 1 的两倍。"],
+    ["口语分为几个部分？", ["2个", "3个", "4个", "5个"], 1, "口语包含 Part 1、Part 2、Part 3。"],
+  ]},
+  2: { title: "句子地基", tip: "先保证主语、谓语和时态正确，再追求复杂表达。", questions: [
+    ["选择正确句子。", ["Many students studying abroad.", "Many students study abroad.", "Many students abroad study because.", "Study abroad many students."], 1, "Many students 是主语，study 是谓语。"],
+    ["The number of learners ___ every year.", ["increase", "increases", "increasing", "have increase"], 1, "中心词 number 是单数，使用 increases。"],
+    ["哪句正确表达昨天发生的事？", ["I attend yesterday.", "I attended yesterday.", "I attending yesterday.", "I have attend yesterday."], 1, "明确过去时间使用一般过去时。"],
+    ["哪句因果关系最清楚？", ["Transport is useful, people drive less.", "Because transport is useful.", "People drive less because transport is convenient.", "Transport convenient because."], 2, "主句完整，并用 because 连接原因。"],
+    ["哪种口语回答更容易展开？", ["Yes.", "No.", "Yes, because it saves me time.", "Maybe good."], 2, "直接回答后补充原因更自然。"],
+  ]},
+  3: { title: "第一轮复习", tip: "识别知识、定位、理解或粗心造成的错误。", questions: [
+    ["听力漏掉一题后应该？", ["继续死等", "立即跟上当前题", "停止答题", "从头播放"], 1, "及时跟上可避免连续失分。"],
+    ["选择正确句子。", ["The graph show a rise.", "The graph shows a rise.", "The graph showing a rise.", "The graph are show."], 1, "The graph 是单数，谓语用 shows。"],
+    ["写作应优先保证？", ["最长单词", "每句复杂", "回应题目且结构清楚", "尽可能多写"], 2, "回应任务和清楚结构是基础。"],
+    ["两类雅思不同的部分是？", ["听力口语", "阅读写作", "听力阅读", "全部不同"], 1, "阅读与写作因考试类型而不同。"],
+    ["哪种口语回答更完整？", ["Yes.", "Hometown.", "Yes. It is quiet and my family lives there.", "I liking it."], 2, "直接回答并补充特点和原因。"],
+  ]},
+  4: { title: "起点挑战", tip: "Boss 关混合检查前三周内容。60 分过关。", questions: [
+    ["雅思总分包含几个单项？", ["2个", "3个", "4个", "5个"], 2, "听力、阅读、写作、口语共四项。"],
+    ["选择正确句子。", ["Technology help students.", "Technology helps students.", "Technology helping students.", "Technology are help."], 1, "Technology 是单数，使用 helps。"],
+    ["听力漏题后的优先策略？", ["一直回想", "跟上当前位置", "放弃剩余题", "随意填写"], 1, "及时跟上避免连续失分。"],
+    ["哪句有完整观点和原因？", ["I agree.", "Because education is important.", "I agree because education benefits the community.", "Education important."], 2, "先表达立场，再给出理由。"],
+    ["Task 2 的成绩权重是？", ["低于 Task 1", "约为 Task 1 两倍", "完全相同", "只算 Task 2"], 1, "Task 2 权重约为 Task 1 的两倍。"],
+  ]},
+};
+
+const PAGE_STYLE = PAGE.slice(PAGE.indexOf("<style>"), PAGE.indexOf("</style>") + 8);
+
+function documentPage(body) {
+  return `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#173b57"><title>六分计划 · 公网体验版</title>${PAGE_STYLE}<style>a.primary,a.node{text-decoration:none}.answer{width:100%}.server-form{display:grid;gap:9px}.server-note{max-width:1050px;margin:0 auto 18px;padding:10px 14px;color:#315c53;background:#e5f3ee;border:1px solid #c5e0d7;border-radius:11px;font-size:11px}</style></head><body>${body}</body></html>`;
+}
+
+function renderServerMap() {
+  let worlds = "";
+  SERVER_WORLDS.forEach((world, worldIndex) => {
+    worlds += `<article class="world" style="--c:${world[2]}"><header class="worldhead"><b>世界 ${worldIndex + 1}</b><strong>${world[0]}</strong><small>${world[1]}</small></header><div class="path">`;
+    for (let part = 1; part <= 4; part += 1) {
+      const week = worldIndex * 4 + part;
+      if (week <= 4) {
+        worlds += `<a class="node ${week === 1 ? "active" : "done"}" href="/?level=${week}"><strong>${part === 4 ? "冠" : week}</strong><span>${SERVER_NAMES[week - 1]}</span><small>${week === 1 ? "开始" : "可体验"}</small></a>`;
+      } else {
+        worlds += `<span class="node locked"><strong>${part === 4 ? "冠" : week}</strong><span>${SERVER_NAMES[week - 1]}</span><small>锁</small></span>`;
+      }
+    }
+    worlds += "</div></article>";
+  });
+  return documentPage(`<div class="shell"><aside class="side"><div class="brand"><span class="mark">6</span>六分计划</div><p>稳定体验版</p><small>服务器直接生成页面，不依赖浏览器脚本。</small></aside><main class="main"><div class="server-note"><b>公开测试</b> · 手机和电脑均可打开</div><header class="head"><div><p>启航岛 · 第 1 周</p><h1>亲自走一遍闯关流程。</h1></div><span class="pill">免登录体验</span></header><section class="stats"><div class="stat"><span>当前关卡</span><strong>第 1 周</strong></div><div class="stat"><span>累计经验</span><strong>0 XP</strong></div><div class="stat"><span>可体验</span><strong>4 关</strong></div><div class="stat"><span>总路线</span><strong>24 周</strong></div></section><div class="grid"><section class="map"><div class="maptop"><div><p class="eyebrow">24周闯关路线</p><h2>从起点走到六分之巅</h2></div><span class="overall">0%</span></div><div class="worlds">${worlds}</div></section><aside class="guide"><p class="eyebrow">怎么玩</p><h2>完成 5 道互动题</h2><ol><li>选择一个关卡</li><li>逐题作答并查看解析</li><li>结算分数和星级</li><li>返回地图继续体验</li></ol><a class="primary" style="display:block;text-align:center" href="/?level=1">进入第一关</a><div class="note">正式版将接入账号，实现手机和电脑进度同步。</div></aside></div></main></div>`);
+}
+
+function renderServerLevel(url) {
+  const level = Math.min(4, Math.max(1, Number(url.searchParams.get("level")) || 1));
+  const lesson = SERVER_LESSONS[level];
+  const questionNumber = Number(url.searchParams.get("q")) || 0;
+  const score = Math.max(0, Number(url.searchParams.get("score")) || 0);
+  if (url.searchParams.get("result") === "1") {
+    const percent = score * 20;
+    const stars = percent === 100 ? 3 : percent >= 80 ? 2 : percent >= 60 ? 1 : 0;
+    return documentPage(`<div class="play"><div class="playtop"><a class="close" href="/">×</a><div class="track"><i style="width:100%"></i></div><span></span></div><article class="card result"><p class="eyebrow">${percent >= 60 ? "挑战成功" : "继续加油"}</p><h1>${percent >= 60 ? "本关已完成！" : "再试一次就能过关"}</h1><div class="bigstars">${[1, 2, 3].map((item) => `<span class="${item <= stars ? "on" : ""}">★</span>`).join("")}</div><strong class="score">${percent}<small>分</small></strong><p>答对 ${score}/5 题</p><div class="actions"><a class="primary" href="/" style="display:block;text-align:center">返回闯关地图</a><a class="secondary" href="/?level=${level}" style="display:block">重新挑战</a></div></article></div>`);
+  }
+  if (questionNumber < 1) {
+    return documentPage(`<div class="play"><div class="playtop"><a class="close" href="/">×</a><div class="track"><i style="width:5%"></i></div><span></span></div><article class="card intro"><span class="medal">${level}</span><p class="eyebrow">第 ${level} 周 · 约 8 分钟</p><h1>${lesson.title}</h1><div class="tips">${lesson.tip}</div><a class="primary" href="/?level=${level}&q=1&score=0" style="display:block;text-align:center">开始挑战</a></article></div>`);
+  }
+  const index = Math.min(4, questionNumber - 1);
+  const question = lesson.questions[index];
+  const answerValue = url.searchParams.get("answer");
+  const answered = answerValue !== null;
+  const selected = answered ? Number(answerValue) : -1;
+  const isCorrect = selected === question[2];
+  const nextScore = score + (answered && isCorrect ? 1 : 0);
+  const answers = question[1].map((answer, answerIndex) => {
+    let className = "answer";
+    if (answered && answerIndex === question[2]) className += " correct";
+    else if (answered && answerIndex === selected) className += " wrong";
+    if (answered) return `<div class="${className}"><b>${String.fromCharCode(65 + answerIndex)}</b>${answer}</div>`;
+    return `<button class="${className}" name="answer" value="${answerIndex}" type="submit"><b>${String.fromCharCode(65 + answerIndex)}</b>${answer}</button>`;
+  }).join("");
+  const footer = answered
+    ? `<div class="feedback ${isCorrect ? "good" : "bad"}"><b>${isCorrect ? "答对了！" : "再记住这一点"}</b><br>${question[3]}</div><a class="primary" style="display:block;text-align:center" href="/?level=${level}&${questionNumber < 5 ? `q=${questionNumber + 1}&score=${nextScore}` : `result=1&score=${nextScore}`}">${questionNumber < 5 ? "下一题" : "查看结算"}</a>`
+    : "";
+  return documentPage(`<div class="play"><div class="playtop"><a class="close" href="/">×</a><div class="track"><i style="width:${Math.round((index / 5) * 100)}%"></i></div><span></span></div><article class="card"><div class="qmeta"><span>第 ${level} 周</span><strong>${questionNumber} / 5</strong></div><h1>${question[0]}</h1><form class="server-form" method="get" action="/"><input type="hidden" name="level" value="${level}"><input type="hidden" name="q" value="${questionNumber}"><input type="hidden" name="score" value="${score}">${answers}</form>${footer}</article></div>`);
+}
+
+function renderServerPage(url) {
+  return url.searchParams.has("level") ? renderServerLevel(url) : renderServerMap();
+}
+
 addEventListener("fetch", (event) => {
   event.respondWith(handleRequest(event.request));
 });
@@ -75,7 +177,7 @@ function handleRequest(request) {
       },
     });
   }
-  return new Response(PAGE, {
+  return new Response(renderServerPage(url), {
     headers: {
       "content-type": "text/html; charset=utf-8",
       "cache-control": "no-store, max-age=0",
