@@ -24,6 +24,7 @@ Last updated: 2026-08-15
 - Expanded the D1 schema and migration with the full FSRS scheduling state and review-log fields. Finishing the due queue automatically completes the vocabulary task and awards XP once.
 - Added `/demo/vocabulary` for local interaction and phone-layout verification without touching learner cloud records.
 - Added this documentation so a new Codex session can resume without the old conversation.
+- Added repository-level autonomous execution rules in `AGENTS.md`, live status in `docs/PROJECT_STATUS.md`, and task reports under `reports/` so future Codex sessions preserve the same verify-review-improve workflow.
 - Researched the game direction and selected a learning-first level map. See `docs/OPEN_SOURCE_REFERENCES.md`.
 
 ## Verify before continuing
