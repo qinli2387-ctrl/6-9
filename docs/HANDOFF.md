@@ -1,6 +1,6 @@
 # Development handoff
 
-Last updated: 2026-08-15
+Last updated: 2026-08-17
 
 ## Completed
 
@@ -24,8 +24,16 @@ Last updated: 2026-08-15
 - Expanded the D1 schema and migration with the full FSRS scheduling state and review-log fields. Finishing the due queue automatically completes the vocabulary task and awards XP once.
 - Added `/demo/vocabulary` for local interaction and phone-layout verification without touching learner cloud records.
 - Added this documentation so a new Codex session can resume without the old conversation.
+- Added a four-skill placement flow at `/placement` and `/demo/placement`. It stores server-computed preliminary bands and initial training weights in `skill_baselines`; weighted daily tasks use the two highest priorities.
+- Added original placement reading/writing/speaking content, an original listening WAV with captions, the `0004_gifted_stranger` migration, and placement scoring/unit/browser smoke tests.
 - Added repository-level autonomous execution rules in `AGENTS.md`, live status in `docs/PROJECT_STATUS.md`, and task reports under `reports/` so future Codex sessions preserve the same verify-review-improve workflow.
 - Researched the game direction and selected a learning-first level map. See `docs/OPEN_SOURCE_REFERENCES.md`.
+- Re-checked current official and open-source options for the next delivery stages. The bounded-module adoption plan and four-week sequence are in `docs/OPEN_SOURCE_ACCELERATION_2026-08-17.md`.
+- Added `learning_errors`, the `0005_demonic_harpoon` migration and a ten-category listening/reading taxonomy. Placement and level mistakes are stored as user-scoped question snapshots.
+- Replaced the formal third-week static review with a server-built mix of due mistakes and FSRS cards. Correct reviews resolve mistakes or advance FSRS; an empty queue safely uses the original foundation review.
+- Added `wrangler.local.jsonc`, local migration commands, independent SQLite replay and `docs/LOCAL_DEVELOPMENT.md`.
+- Added a repeatable `pnpm test:app:local` integration pass for auth, validation failures, placement, weeks 1–3, personalized review, FSRS scheduling and cross-user isolation.
+- Fixed D1 starter vocabulary seeding by batching inserts below the bound-parameter limit; fixed local Vite watching of locked validation output directories.
 
 ## Verify before continuing
 
@@ -35,6 +43,11 @@ Last updated: 2026-08-15
 - The Cloudflare API confirms that both deployments are enabled. This development computer times out on `workers.dev`, while `https://band-six-demo.pages.dev` returns HTTP 200, so use the Pages address as the primary public demo URL.
 - Cloudflare Browser Rendering verified the live mobile page at 430×900, then verified the first-level intro, question form, correct-answer explanation and 100-point result page using visible selectors.
 - The new vocabulary route passed a production build, targeted lint, the rendered landing-page regression test, and a real Chrome smoke test at 430×900. The smoke test revealed a card, verified all four rating controls, selected “记得”, loaded the next card and confirmed progress changed to 1/3.
+- The placement route passed the production build, full lint, six automated tests, a SQLite migration rehearsal, and a fresh Chrome smoke test on desktop plus 430×900. The smoke test completed all four sections, reached the result page, confirmed four skill cards, weight sum 100% and no horizontal overflow.
+- The dynamic review change passed a fresh Vinext production build, typecheck, ESLint, 11 automated regression tests, targeted failure-path tests, a six-migration SQLite replay and a real local D1 migration/isolation run.
+- `pnpm test:app:local` passed against the running app, including a real dynamic review page and the server-side FSRS/error updates.
+- Browser validation passed for the authenticated third-week page at desktop and 390×844 mobile sizes; no horizontal overflow or browser console errors were observed.
+- Wrangler local D1 is verified on this machine after installing the official Microsoft VC++ runtime. The exact local command is `pnpm db:verify:local`; it now passes the migration, schema and two-user isolation assertions.
 - Publish or recover the private preview, then sign in.
 - Complete a task, open the site on another device, and confirm the completion remains visible.
 
@@ -43,11 +56,13 @@ Last updated: 2026-08-15
 - Local Git history is initialized and clean as of the first application commit.
 - The source was pushed to the temporary Sites Git remote.
 - The durable GitHub handoff repository is `https://github.com/qinli2387-ctrl/6-9` and the working branch is `main`.
-- Research audit and FSRS vocabulary work were pushed to GitHub in commit `295b0b6`.
+- Research audit and FSRS vocabulary work were pushed to GitHub in commit `295b0b6`; the autonomous execution protocol was present at remote baseline `215252c` before this update.
 - Cloudflare Worker name: `ielts-band-six-demo`; account subdomain: `qinli2387-ielts`.
 - Cloudflare Pages project: `band-six-demo`; primary demo domain: `band-six-demo.pages.dev`.
 - Never put account passwords or API secrets in the repository. Connect each Codex device with GitHub OAuth/repository permissions instead.
 
 ## Next implementation task
 
-Build the four-skill placement flow and use its results to set initial training weights. Then add the reading/listening error taxonomy and generate review levels from due cards and mistakes. The first match-3 prototype should consume that same due-card queue rather than maintain a separate game score.
+Resolve the formal Sites project and run migrations `0003`, `0004`, `0005` against a reachable D1 database. Verify placement mistakes, third-week review, FSRS scheduling and XP on two devices. Then expand weeks 5–8 using the new source/error metadata.
+
+After the review loop and weeks 5–8 are usable, follow the researched productive-skills sequence: native MediaRecorder, R2 direct upload, Workers AI Whisper transcription, then Promptfoo rubric regression and axe-core release checks.

@@ -34,7 +34,7 @@ export function DemoDashboard() {
     <main className="app-shell demo-app-shell">
       <aside className="sidebar">
         <Link className="brand" href="/"><span className="brand-mark">6</span><span>六分计划</span></Link>
-        <nav className="side-nav" aria-label="体验导航"><a className="active" href="/demo">闯关地图</a><a href="#demo-help">体验说明</a><Link href="/">返回首页</Link></nav>
+        <nav className="side-nav" aria-label="体验导航"><a className="active" href="/demo">闯关地图</a><a href="/demo/placement">四科摸底</a><a href="#demo-help">体验说明</a><Link href="/">返回首页</Link></nav>
         <button className="demo-reset" onClick={resetDemo}>重置体验进度</button>
       </aside>
       <section className="dashboard-main">
@@ -50,7 +50,7 @@ export function DemoDashboard() {
           <LevelMap currentWeek={demo.currentWeek} progress={demo.progress} demoMode />
           <aside className="journey-rail" id="demo-help">
             <section className="today-panel demo-help-card"><p className="eyebrow">怎么玩</p><h2>点击地图中的“开始”</h2><ol><li>先看本关学习提示</li><li>完成5道互动题</li><li>根据成绩获得星级和XP</li><li>返回地图查看下一关解锁</li></ol><a className="level-primary" href={`/demo/levels/${Math.min(demo.currentWeek, 4)}`}>进入当前关卡</a></section>
-            <section className="insight-panel"><p className="eyebrow">正式版区别</p><strong className="band-number">云</strong><p>正式版会按登录账号保存到云端，并在手机和电脑间同步。</p><div className="coach-note"><span>提示</span><p>体验版刷新不会丢失，但清除浏览器数据后会重置。</p></div></section>
+            <section className="insight-panel"><p className="eyebrow">先找起点</p><strong className="band-number">4科</strong><p>完成听、读、写、说短测，查看初始训练权重。</p><a className="placement-rail-link" href="/demo/placement">体验四科摸底</a><div className="coach-note"><span>正式版区别</span><p>正式版会把结果保存到账号，并用于生成每日任务。</p></div></section>
           </aside>
         </div>
       </section>

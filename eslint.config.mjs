@@ -14,6 +14,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "work/**",
+    "worker-configuration.d.ts",
+    "_repo_extract/**",
     ".vinext/**",
     "next-env.d.ts",
   ]),

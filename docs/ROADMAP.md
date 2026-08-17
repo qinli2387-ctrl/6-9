@@ -12,7 +12,8 @@
 ## Phase 2 — Diagnostic and planning
 
 - [x] Academic/General Training choice, target date and daily study time
-- [ ] Listening, reading, writing and speaking placement flow
+- [x] Listening, reading, writing and speaking placement flow
+- [x] Save placement bands and initial training weights
 - [ ] Generate the initial 24-week plan
 - [ ] Weekly plan recalculation
 
@@ -23,7 +24,7 @@
 - [x] Stars, XP, streak and world completion progress foundation
 - [x] Playable level session, instant feedback, score settlement and sequential unlocking
 - [x] First four-week world with training, review and Boss levels
-- [ ] Review levels generated from due errors and vocabulary
+- [x] Review levels generated from due errors and vocabulary
 - [x] Boss mock test nodes at the end of each four-week world
 - [ ] Optional match-3 vocabulary mini-game prototype
 
@@ -31,7 +32,7 @@
 
 - [x] Add ts-fsrs scheduler
 - [x] Four review ratings and due-card queue
-- [ ] Reading/listening error taxonomy and error book
+- [x] Reading/listening error taxonomy and error book foundation
 
 ## Phase 4 — Productive skills
 

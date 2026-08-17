@@ -1,3 +1,5 @@
+import type { ErrorCategory } from "@/lib/error-taxonomy";
+
 export type LessonQuestion = {
   id: string;
   skill: "规则" | "听力" | "阅读" | "语法" | "写作" | "口语";
@@ -6,6 +8,7 @@ export type LessonQuestion = {
   options: string[];
   correctIndex: number;
   explanation: string;
+  errorCategory?: ErrorCategory;
 };
 
 export type LevelLesson = {
@@ -35,7 +38,7 @@ const lessons: LevelLesson[] = [
       {
         id: "w1-q2", skill: "听力", prompt: "做雅思听力时，题目答案通常怎样出现？",
         options: ["完全随机", "通常按录音信息顺序出现", "先出现最后一题", "只在录音结尾出现"],
-        correctIndex: 1, explanation: "听力题的答案通常按录音中的信息顺序出现，可以利用题号预测进度。",
+        correctIndex: 1, explanation: "听力题的答案通常按录音中的信息顺序出现，可以利用题号预测进度。", errorCategory: "prediction",
       },
       {
         id: "w1-q3", skill: "规则", prompt: "学术类与培训类雅思，哪两项内容相同？",
@@ -104,7 +107,7 @@ const lessons: LevelLesson[] = [
       {
         id: "w3-q1", skill: "听力", prompt: "听力题号已经进入第6题，但你还在等待第4题答案，最合适的做法是？",
         options: ["继续死等第4题", "立即跟上当前题，避免连续漏题", "停止答题", "从头播放录音"],
-        correctIndex: 1, explanation: "听力信息通常按题目顺序出现。确认错过后应及时跟上，避免连续失分。",
+        correctIndex: 1, explanation: "听力信息通常按题目顺序出现。确认错过后应及时跟上，避免连续失分。", errorCategory: "lost_position",
       },
       {
         id: "w3-q2", skill: "语法", prompt: "选择正确句子。",
@@ -151,7 +154,7 @@ const lessons: LevelLesson[] = [
       {
         id: "w4-q3", skill: "听力", prompt: "听力中漏掉一道题后，优先策略是？",
         options: ["一直回想漏题", "跟上当前录音位置", "放弃剩余题目", "随意填写所有答案"],
-        correctIndex: 1, explanation: "及时跟上当前位置可以避免一次失误扩大成连续失分。",
+        correctIndex: 1, explanation: "及时跟上当前位置可以避免一次失误扩大成连续失分。", errorCategory: "lost_position",
       },
       {
         id: "w4-q4", skill: "写作", prompt: "哪一句包含完整的观点和原因？",

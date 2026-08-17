@@ -33,7 +33,7 @@ export function OnboardingForm({ initialExamType, initialExamDate, initialDailyM
       });
       const result = await response.json() as { error?: string };
       if (!response.ok) throw new Error(result.error ?? "保存失败，请稍后再试");
-      router.replace("/dashboard");
+      router.replace(editing ? "/dashboard" : "/placement");
       router.refresh();
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "保存失败，请稍后再试");
@@ -76,7 +76,7 @@ export function OnboardingForm({ initialExamType, initialExamDate, initialDailyM
 
       <div className="target-summary"><span>目标分数</span><strong>IELTS 6.0</strong><small>24周训练计划</small></div>
       {error && <p className="form-error" role="alert">{error}</p>}
-      <button className="setup-submit" type="submit" disabled={saving}>{saving ? "正在同步…" : editing ? "保存并返回地图" : "生成我的闯关地图"}</button>
+      <button className="setup-submit" type="submit" disabled={saving}>{saving ? "正在同步…" : editing ? "保存并返回地图" : "保存并开始四科摸底"}</button>
     </form>
   );
 }

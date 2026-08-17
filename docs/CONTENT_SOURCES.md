@@ -19,3 +19,8 @@ Facts currently used:
 
 Recheck official sources before changing test-format lessons because delivery rules and wording can change.
 
+## Placement content
+
+- `public/audio/placement-listening.wav` and its English WebVTT captions are an original short dialogue generated for this repository; it is not copied from an IELTS sample test.
+- `lib/placement-content.ts` contains the original reading passage, writing prompt and speaking prompt used by the local placement flow.
+- Writing and speaking estimates use transparent, lightweight signals (word count, sentence/paragraph structure, linking terms, lexical variety, timed response and self-rating). They are explicitly labelled as preliminary and require later calibration against official public descriptors.

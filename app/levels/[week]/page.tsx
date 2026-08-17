@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getDb } from "@/db";
 import { learnerProfiles, levelProgress } from "@/db/schema";
 import { getLevelLesson } from "@/lib/level-lessons";
+import { loadReviewLessonForUser } from "@/lib/review-server";
 import { planWorlds } from "@/lib/learning-plan";
 import { requireChatGPTUser } from "@/app/chatgpt-auth";
 import { LevelSession } from "./LevelSession";
@@ -29,7 +30,8 @@ async function LevelRoute({ params }: PageProps) {
 
   const level = planWorlds.flatMap((world) => world.levels).find((item) => item.week === week)!;
   const world = planWorlds.find((item) => item.levels.some((worldLevel) => worldLevel.week === week))!;
-  const lesson = getLevelLesson(week);
+  const review = week === 3 ? await loadReviewLessonForUser(user.userId) : null;
+  const lesson = review?.lesson ?? getLevelLesson(week);
   const [saved] = await db.select().from(levelProgress)
     .where(and(eq(levelProgress.userId, user.userId), eq(levelProgress.levelKey, level.key))).limit(1);
 
@@ -57,7 +59,7 @@ async function LevelRoute({ params }: PageProps) {
       lesson={lesson}
       bestStars={saved?.stars ?? 0}
       bestScore={saved?.bestScore ?? 0}
+      personalizedReview={review?.personalized ?? false}
     />
   );
 }
-

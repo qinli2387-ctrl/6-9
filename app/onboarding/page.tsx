@@ -48,7 +48,7 @@ export default async function OnboardingPage() {
           <ol className="setup-preview" aria-label="计划生成步骤">
             <li><span>1</span>确定考试类型与日期</li>
             <li><span>2</span>安排每天可用时间</li>
-            <li><span>3</span>进入第一周基础关</li>
+            <li><span>3</span>完成四科起点摸底</li>
           </ol>
         </div>
         <OnboardingForm

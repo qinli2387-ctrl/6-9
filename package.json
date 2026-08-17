@@ -10,9 +10,18 @@
     "dev": "vinext dev",
     "build": "vinext build",
     "start": "vinext start",
-    "test": "vinext build && node --test tests/rendered-html.test.mjs",
+    "test": "vinext build && node --test tests/rendered-html.test.mjs tests/placement-scoring.test.mjs tests/review-lesson.test.mjs",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
-    "db:generate": "drizzle-kit generate"
+    "types": "wrangler types worker-configuration.d.ts --config wrangler.local.jsonc",
+    "typecheck": "wrangler types worker-configuration.d.ts --config wrangler.local.jsonc && tsc --noEmit",
+    "check": "pnpm typecheck && pnpm lint && pnpm db:verify:local && pnpm test",
+    "test:app:local": "node scripts/verify-local-app.mjs",
+    "preview:auth:local": "node scripts/serve-authenticated-preview.mjs",
+    "db:generate": "drizzle-kit generate",
+    "db:migrations:list:local": "wrangler d1 migrations list band-six-local --config wrangler.local.jsonc --local",
+    "db:migrate:local": "wrangler d1 migrations apply band-six-local --config wrangler.local.jsonc --local",
+    "db:verify:local": "node scripts/verify-d1-migrations.mjs",
+    "db:verify:sqlite": "node scripts/verify-sqlite-migrations.mjs"
   },
   "dependencies": {
     "drizzle-orm": "0.45.2",

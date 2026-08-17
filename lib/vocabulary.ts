@@ -1,4 +1,3 @@
-import { count, eq } from "drizzle-orm";
 import type { Card } from "ts-fsrs";
 import { getDb } from "@/db";
 import { vocabCards } from "@/db/schema";
@@ -20,16 +19,18 @@ const starterVocabulary = [
 
 export async function ensureStarterVocabulary(userId: string) {
   const db = getDb();
-  const [result] = await db.select({ value: count() }).from(vocabCards)
-    .where(eq(vocabCards.userId, userId));
-  if (result.value > 0) return;
-
-  await db.insert(vocabCards).values(starterVocabulary.map(([word, meaning, example]) => ({
+  const rows = starterVocabulary.map(([word, meaning, example]) => ({
     userId,
     word,
     meaning,
     example,
-  }))).onConflictDoNothing();
+  }));
+
+  // D1 limits bound parameters per statement. Keep each seed insert below
+  // that limit and let the user/word unique index make retries idempotent.
+  for (let index = 0; index < rows.length; index += 6) {
+    await db.insert(vocabCards).values(rows.slice(index, index + 6)).onConflictDoNothing();
+  }
 }
 
 export function toFsrsCard(card: typeof vocabCards.$inferSelect): Card {

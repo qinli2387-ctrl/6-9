@@ -26,6 +26,7 @@ type Props = {
   bestStars: number;
   bestScore: number;
   demoMode?: boolean;
+  personalizedReview?: boolean;
 };
 
 type DemoProgress = { levelKey: string; status: string; stars: number };
@@ -33,7 +34,7 @@ type DemoState = { currentWeek: number; totalXp: number; progress: DemoProgress[
 
 const demoStorageKey = "band-six-demo-progress";
 
-export function LevelSession({ week, worldName, title, focus, kind, lesson, bestStars, bestScore, demoMode = false }: Props) {
+export function LevelSession({ week, worldName, title, focus, kind, lesson, bestStars, bestScore, demoMode = false, personalizedReview = false }: Props) {
   const router = useRouter();
   const startedAt = useRef(0);
   const [mode, setMode] = useState<"briefing" | "questions" | "result">("briefing");
@@ -79,7 +80,12 @@ export function LevelSession({ week, worldName, title, focus, kind, lesson, best
       const response = await fetch("/api/levels/complete", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ week, answers: finalAnswers, durationSeconds: Math.round((Date.now() - startedAt.current) / 1000) }),
+        body: JSON.stringify({
+          week,
+          answers: finalAnswers,
+          durationSeconds: Math.round((Date.now() - startedAt.current) / 1000),
+          reviewQuestionIds: personalizedReview ? lesson.questions.map((item) => item.id) : undefined,
+        }),
       });
       const payload = await response.json() as Result & { error?: string };
       if (!response.ok) throw new Error(payload.error ?? "成绩保存失败");

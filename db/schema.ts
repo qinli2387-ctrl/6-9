@@ -73,6 +73,57 @@ export const studyEvents = sqliteTable(
   (table) => [index("idx_study_events_user_time").on(table.userId, table.createdAt)],
 );
 
+export const learningErrors = sqliteTable(
+  "learning_errors",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    userId: text("user_id").notNull(),
+    sourceType: text("source_type").notNull(),
+    sourceKey: text("source_key").notNull(),
+    questionId: text("question_id").notNull(),
+    skill: text("skill").notNull(),
+    category: text("category").notNull(),
+    prompt: text("prompt").notNull(),
+    context: text("context").notNull().default(""),
+    optionsJson: text("options_json").notNull(),
+    selectedIndex: integer("selected_index").notNull(),
+    correctIndex: integer("correct_index").notNull(),
+    explanation: text("explanation").notNull().default(""),
+    status: text("status").notNull().default("open"),
+    occurrenceCount: integer("occurrence_count").notNull().default(1),
+    dueAt: text("due_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+    lastWrongAt: text("last_wrong_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+    resolvedAt: text("resolved_at"),
+    createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  },
+  (table) => [
+    uniqueIndex("ux_learning_errors_user_source_question").on(table.userId, table.sourceType, table.questionId),
+    index("idx_learning_errors_user_status_due").on(table.userId, table.status, table.dueAt),
+    index("idx_learning_errors_user_skill_category").on(table.userId, table.skill, table.category),
+  ],
+);
+
+export const skillBaselines = sqliteTable("skill_baselines", {
+  userId: text("user_id").primaryKey(),
+  overallBand: real("overall_band").notNull(),
+  listeningScore: integer("listening_score").notNull(),
+  listeningBand: real("listening_band").notNull(),
+  listeningWeight: integer("listening_weight").notNull(),
+  readingScore: integer("reading_score").notNull(),
+  readingBand: real("reading_band").notNull(),
+  readingWeight: integer("reading_weight").notNull(),
+  writingScore: integer("writing_score").notNull(),
+  writingBand: real("writing_band").notNull(),
+  writingWeight: integer("writing_weight").notNull(),
+  speakingScore: integer("speaking_score").notNull(),
+  speakingBand: real("speaking_band").notNull(),
+  speakingWeight: integer("speaking_weight").notNull(),
+  version: integer("version").notNull().default(1),
+  completedAt: text("completed_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
 export const vocabCards = sqliteTable(
   "vocab_cards",
   {

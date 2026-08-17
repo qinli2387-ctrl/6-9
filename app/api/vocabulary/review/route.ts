@@ -1,13 +1,11 @@
 import { and, count, eq, sql } from "drizzle-orm";
-import { fsrs, type Grade } from "ts-fsrs";
+import type { Grade } from "ts-fsrs";
 import { getDb } from "@/db";
-import { dailyTasks, learnerProfiles, studyEvents, vocabCards, vocabReviews } from "@/db/schema";
+import { dailyTasks, learnerProfiles, studyEvents, vocabCards } from "@/db/schema";
 import { getChatGPTUser } from "@/app/chatgpt-auth";
-import { toFsrsCard } from "@/lib/vocabulary";
+import { scheduleVocabularyCard } from "@/lib/vocabulary-scheduler";
 
 type ReviewPayload = { cardId?: number; rating?: number };
-
-const scheduler = fsrs({ request_retention: 0.9, enable_fuzz: true });
 
 function dateInShanghai() {
   return new Intl.DateTimeFormat("en-CA", {
@@ -33,36 +31,7 @@ export async function POST(request: Request) {
   if (!saved) return Response.json({ error: "词卡不存在" }, { status: 404 });
 
   const reviewedAt = new Date();
-  const result = scheduler.next(toFsrsCard(saved), reviewedAt, payload.rating as Grade);
-  const dueAt = result.card.due.toISOString();
-
-  await db.update(vocabCards).set({
-    dueAt,
-    stability: result.card.stability,
-    difficulty: result.card.difficulty,
-    elapsedDays: result.card.elapsed_days,
-    scheduledDays: result.card.scheduled_days,
-    learningSteps: result.card.learning_steps,
-    state: result.card.state,
-    reps: result.card.reps,
-    lapses: result.card.lapses,
-    lastReviewAt: result.card.last_review?.toISOString() ?? reviewedAt.toISOString(),
-  }).where(and(eq(vocabCards.id, saved.id), eq(vocabCards.userId, user.userId)));
-
-  await db.insert(vocabReviews).values({
-    userId: user.userId,
-    cardId: saved.id,
-    rating: result.log.rating,
-    state: result.log.state,
-    dueAt: result.log.due.toISOString(),
-    stability: result.log.stability,
-    difficulty: result.log.difficulty,
-    elapsedDays: result.log.elapsed_days,
-    lastElapsedDays: result.log.last_elapsed_days,
-    scheduledDays: result.log.scheduled_days,
-    learningSteps: result.log.learning_steps,
-    reviewedAt: result.log.review.toISOString(),
-  });
+  const { dueAt } = await scheduleVocabularyCard(db, user.userId, saved, payload.rating as Grade, reviewedAt);
 
   await db.insert(studyEvents).values({
     userId: user.userId,
