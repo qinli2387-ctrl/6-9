@@ -34,6 +34,8 @@ Last updated: 2026-08-17
 - Added `wrangler.local.jsonc`, local migration commands, independent SQLite replay and `docs/LOCAL_DEVELOPMENT.md`.
 - Added a repeatable `pnpm test:app:local` integration pass for auth, validation failures, placement, weeks 1–3, personalized review, FSRS scheduling and cross-user isolation.
 - Fixed D1 starter vocabulary seeding by batching inserts below the bound-parameter limit; fixed local Vite watching of locked validation output directories.
+- Made target setup atomic and hardened daily-task completion plus single-card FSRS review with transactional D1 batches and optimistic version checks.
+- Extended `pnpm test:app:local` with real concurrent duplicate requests: task XP/event writes occur once, while a stale card review receives 409 without a duplicate log.
 
 ## Verify before continuing
 
@@ -46,6 +48,7 @@ Last updated: 2026-08-17
 - The placement route passed the production build, full lint, six automated tests, a SQLite migration rehearsal, and a fresh Chrome smoke test on desktop plus 430×900. The smoke test completed all four sections, reached the result page, confirmed four skill cards, weight sum 100% and no horizontal overflow.
 - The dynamic review change passed a fresh Vinext production build, typecheck, ESLint, 11 automated regression tests, targeted failure-path tests, a six-migration SQLite replay and a real local D1 migration/isolation run.
 - `pnpm test:app:local` passed against the running app, including a real dynamic review page and the server-side FSRS/error updates.
+- The consistency hardening pass additionally verified two concurrent task completions (10 total XP, one event) and two concurrent reviews of one card (one 200, one 409, one log/event).
 - Browser validation passed for the authenticated third-week page at desktop and 390×844 mobile sizes; no horizontal overflow or browser console errors were observed.
 - Wrangler local D1 is verified on this machine after installing the official Microsoft VC++ runtime. The exact local command is `pnpm db:verify:local`; it now passes the migration, schema and two-user isolation assertions.
 - Publish or recover the private preview, then sign in.
@@ -63,6 +66,6 @@ Last updated: 2026-08-17
 
 ## Next implementation task
 
-Resolve the formal Sites project and run migrations `0003`, `0004`, `0005` against a reachable D1 database. Verify placement mistakes, third-week review, FSRS scheduling and XP on two devices. Then expand weeks 5–8 using the new source/error metadata.
+Resolve the formal Sites project and run migrations `0003`, `0004`, `0005` against a reachable D1 database. Verify placement mistakes, third-week review, FSRS scheduling and XP on two devices. Then make placement and whole-level submission all-or-nothing before expanding weeks 5–8 using the new source/error metadata.
 
 After the review loop and weeks 5–8 are usable, follow the researched productive-skills sequence: native MediaRecorder, R2 direct upload, Workers AI Whisper transcription, then Promptfoo rubric regression and axe-core release checks.

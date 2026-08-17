@@ -3,7 +3,7 @@ import type { Grade } from "ts-fsrs";
 import { getDb } from "@/db";
 import { learningErrors, vocabCards } from "@/db/schema";
 import { ensureStarterVocabulary } from "@/lib/vocabulary";
-import { scheduleVocabularyCard } from "@/lib/vocabulary-scheduler";
+import { scheduleVocabularyCard, VocabularyReviewConflictError } from "@/lib/vocabulary-scheduler";
 import { getLevelLesson } from "@/lib/level-lessons";
 import {
   buildReviewLesson,
@@ -127,7 +127,14 @@ export async function applyReviewAnswers(userId: string, sources: ReviewSource[]
         eq(vocabCards.userId, userId),
       )).limit(1);
       if (!saved) throw new ReviewValidationError("词卡不存在");
-      await scheduleVocabularyCard(db, userId, saved, (correct ? 3 : 1) as Grade, reviewedAt);
+      try {
+        await scheduleVocabularyCard(db, userId, saved, (correct ? 3 : 1) as Grade, reviewedAt);
+      } catch (error) {
+        if (error instanceof VocabularyReviewConflictError) {
+          throw new ReviewValidationError(error.message);
+        }
+        throw error;
+      }
     }
   }
 }

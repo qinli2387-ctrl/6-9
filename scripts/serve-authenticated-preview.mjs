@@ -1,6 +1,6 @@
 import { createServer } from "node:http";
 
-const upstream = process.env.UPSTREAM_URL ?? "http://localhost:4321";
+const upstream = process.env.UPSTREAM_URL ?? "http://localhost:3000";
 const port = Number(process.env.AUTH_PREVIEW_PORT ?? 4322);
 const userId = process.env.AUTH_PREVIEW_USER ?? "validation-user-a";
 

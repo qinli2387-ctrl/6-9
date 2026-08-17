@@ -31,6 +31,7 @@ Last updated: 2026-08-17
 - The level and placement APIs record user-scoped listening/reading mistakes; the third-week review builder, strict source-ID checks, empty-queue fallback and FSRS integration pass unit/build review.
 - Production build, full lint, rendered regression tests and a real local workerd/D1 integration pass locally.
 - The repeatable local app integration covers unauthenticated and invalid submissions, placement, weeks 1–3, personalized review, FSRS scheduling and cross-user isolation.
+- Daily-task completion and single-card FSRS review use transactional D1 batches. Concurrent duplicate task completion awards XP and writes its event once; concurrent duplicate card review accepts one request and returns 409 for the stale request.
 - Desktop and 390×844 mobile browser checks cover the authenticated third-week intro, question selection, answer feedback, scrolling, button state and horizontal overflow.
 - GitHub `main` is the durable handoff branch; local work was based on remote commit `215252c` before this validation update.
 
@@ -58,6 +59,7 @@ Last updated: 2026-08-17
 
 - Data export, deletion and backup-recovery drill are missing.
 - Production D1 migration and authenticated multi-device synchronization remain unverified.
+- Placement completion and the whole five-source level submission still span multiple atomic batches; full-request failure injection and all-or-nothing rollback remain to be implemented.
 - PWA manifest, offline recovery and complete WCAG 2.2 audit are missing.
 
 ## Important decisions

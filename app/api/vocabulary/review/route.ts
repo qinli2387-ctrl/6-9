@@ -1,9 +1,10 @@
 import { and, count, eq, sql } from "drizzle-orm";
 import type { Grade } from "ts-fsrs";
 import { getDb } from "@/db";
-import { dailyTasks, learnerProfiles, studyEvents, vocabCards } from "@/db/schema";
+import { dailyTasks, vocabCards } from "@/db/schema";
 import { getChatGPTUser } from "@/app/chatgpt-auth";
-import { scheduleVocabularyCard } from "@/lib/vocabulary-scheduler";
+import { completeDailyTask } from "@/lib/task-completion";
+import { scheduleVocabularyCard, VocabularyReviewConflictError } from "@/lib/vocabulary-scheduler";
 
 type ReviewPayload = { cardId?: number; rating?: number };
 
@@ -26,20 +27,31 @@ export async function POST(request: Request) {
   }
 
   const db = getDb();
-  const [saved] = await db.select().from(vocabCards)
-    .where(and(eq(vocabCards.id, payload.cardId!), eq(vocabCards.userId, user.userId))).limit(1);
-  if (!saved) return Response.json({ error: "词卡不存在" }, { status: 404 });
-
   const reviewedAt = new Date();
-  const { dueAt } = await scheduleVocabularyCard(db, user.userId, saved, payload.rating as Grade, reviewedAt);
+  const [saved] = await db.select().from(vocabCards)
+    .where(and(
+      eq(vocabCards.id, payload.cardId!),
+      eq(vocabCards.userId, user.userId),
+      sql`datetime(${vocabCards.dueAt}) <= datetime(${reviewedAt.toISOString()})`,
+    )).limit(1);
+  if (!saved) return Response.json({ error: "词卡不存在、未到期或状态已更新" }, { status: 409 });
 
-  await db.insert(studyEvents).values({
-    userId: user.userId,
-    activityType: "vocabulary_review",
-    sourceId: saved.id,
-    durationMinutes: 0,
-    score: payload.rating,
-  });
+  let dueAt: string;
+  try {
+    ({ dueAt } = await scheduleVocabularyCard(
+      db,
+      user.userId,
+      saved,
+      payload.rating as Grade,
+      reviewedAt,
+      { recordStudyEvent: true },
+    ));
+  } catch (error) {
+    if (error instanceof VocabularyReviewConflictError) {
+      return Response.json({ error: error.message }, { status: 409 });
+    }
+    throw error;
+  }
 
   const [remaining] = await db.select({ value: count() }).from(vocabCards).where(and(
     eq(vocabCards.userId, user.userId),
@@ -54,17 +66,7 @@ export async function POST(request: Request) {
       eq(dailyTasks.skill, "vocabulary"),
     )).limit(1);
     if (task && task.status !== "done") {
-      await db.update(dailyTasks).set({
-        status: "done",
-        completedAt: reviewedAt.toISOString(),
-        xpAwarded: true,
-      }).where(and(eq(dailyTasks.id, task.id), eq(dailyTasks.userId, user.userId)));
-      if (!task.xpAwarded) {
-        await db.update(learnerProfiles).set({
-          totalXp: sql`${learnerProfiles.totalXp} + 10`,
-          updatedAt: sql`CURRENT_TIMESTAMP`,
-        }).where(eq(learnerProfiles.userId, user.userId));
-      }
+      await completeDailyTask(db, user.userId, task.id, reviewedAt.toISOString(), { recordStudyEvent: false });
     }
   }
 

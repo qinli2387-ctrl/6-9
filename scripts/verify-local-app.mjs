@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 
-const baseUrl = process.env.APP_URL ?? "http://127.0.0.1:4321";
+const baseUrl = process.env.APP_URL ?? "http://localhost:3000";
 const primaryUser = "validation-user-a";
 const secondaryUser = "validation-user-b";
 const wranglerPath = "node_modules/wrangler/bin/wrangler.js";
@@ -42,14 +42,19 @@ function authHeaders(userId) {
   };
 }
 
-async function post(path, userId, body, expectedStatus) {
+async function requestPost(path, userId, body) {
   const response = await fetch(`${baseUrl}${path}`, {
     method: "POST",
     headers: userId ? authHeaders(userId) : { "content-type": "application/json" },
     body: JSON.stringify(body),
   });
   const payload = await response.json();
-  assert.equal(response.status, expectedStatus, `${path}: ${JSON.stringify(payload)}`);
+  return { status: response.status, payload };
+}
+
+async function post(path, userId, body, expectedStatus) {
+  const { status, payload } = await requestPost(path, userId, body);
+  assert.equal(status, expectedStatus, `${path}: ${JSON.stringify(payload)}`);
   return payload;
 }
 
@@ -122,6 +127,22 @@ const placement = await post("/api/placement/complete", primaryUser, {
 assert.equal(Object.values(placement.result.skills).reduce((sum, skill) => sum + skill.weight, 0), 100);
 assert.equal(executeSql(`SELECT COUNT(*) AS count FROM learning_errors WHERE user_id = ${sqlString(primaryUser)} AND status = 'open'`)[0].count, 6);
 
+const dashboardHtml = await page("/dashboard", primaryUser);
+assert.match(dashboardHtml, /今日训练/);
+const [task] = executeSql(`SELECT id, skill FROM daily_tasks WHERE user_id = ${sqlString(primaryUser)} AND skill <> 'vocabulary' ORDER BY position LIMIT 1`);
+assert.ok(task, "expected a generated non-vocabulary daily task");
+const xpBeforeTask = executeSql(`SELECT total_xp AS totalXp FROM learner_profiles WHERE user_id = ${sqlString(primaryUser)}`)[0].totalXp;
+const taskAttempts = await Promise.all([
+  requestPost("/api/tasks/complete", primaryUser, { taskId: task.id, completed: true }),
+  requestPost("/api/tasks/complete", primaryUser, { taskId: task.id, completed: true }),
+]);
+assert.deepEqual(taskAttempts.map((item) => item.status), [200, 200]);
+assert.equal(taskAttempts.reduce((sum, item) => sum + item.payload.xpEarned, 0), 10);
+assert.equal(executeSql(`SELECT total_xp AS totalXp FROM learner_profiles WHERE user_id = ${sqlString(primaryUser)}`)[0].totalXp, xpBeforeTask + 10);
+assert.equal(executeSql(`SELECT COUNT(*) AS count FROM study_events WHERE user_id = ${sqlString(primaryUser)} AND source_id = ${task.id} AND activity_type = ${sqlString(task.skill)}`)[0].count, 1);
+const repeatedTask = await post("/api/tasks/complete", primaryUser, { taskId: task.id, completed: true }, 200);
+assert.equal(repeatedTask.xpEarned, 0);
+
 const weekOne = await post("/api/levels/complete", primaryUser, {
   week: 1,
   answers: [1, 0, 1, 1, 1],
@@ -141,6 +162,16 @@ assert.equal(weekTwo.nextWeek, 3);
 const reviewHtml = await page("/levels/3", primaryUser);
 assert.match(reviewHtml, /只复习当前真正到期的内容/);
 assert.match(reviewHtml, /FSRS 到期词汇/);
+
+const [concurrentCard] = executeSql(`SELECT id FROM vocab_cards WHERE user_id = ${sqlString(primaryUser)} AND datetime(due_at) <= datetime('now') ORDER BY id LIMIT 1`);
+assert.ok(concurrentCard, "expected a due vocabulary card for the concurrency check");
+const vocabularyAttempts = await Promise.all([
+  requestPost("/api/vocabulary/review", primaryUser, { cardId: concurrentCard.id, rating: 3 }),
+  requestPost("/api/vocabulary/review", primaryUser, { cardId: concurrentCard.id, rating: 3 }),
+]);
+assert.deepEqual(vocabularyAttempts.map((item) => item.status).sort((left, right) => left - right), [200, 409]);
+assert.equal(executeSql(`SELECT COUNT(*) AS count FROM vocab_reviews WHERE user_id = ${sqlString(primaryUser)} AND card_id = ${concurrentCard.id}`)[0].count, 1);
+assert.equal(executeSql(`SELECT COUNT(*) AS count FROM study_events WHERE user_id = ${sqlString(primaryUser)} AND source_id = ${concurrentCard.id} AND activity_type = 'vocabulary_review'`)[0].count, 1);
 
 const errors = executeSql(`SELECT id, correct_index AS correctIndex FROM learning_errors WHERE user_id = ${sqlString(primaryUser)} AND status = 'open' AND datetime(due_at) <= datetime('now') ORDER BY datetime(due_at), id LIMIT 5`);
 const cards = executeSql(`SELECT id, word, meaning, example FROM vocab_cards WHERE user_id = ${sqlString(primaryUser)} AND datetime(due_at) <= datetime('now') ORDER BY datetime(due_at), id LIMIT 5`);
@@ -186,4 +217,4 @@ assert.equal(executeSql(`SELECT COUNT(*) AS count FROM vocab_cards WHERE user_id
 assert.equal(executeSql(`SELECT COUNT(*) AS count FROM level_progress WHERE user_id = ${sqlString(primaryUser)} AND level_key = 'week-3' AND status = 'mastered' AND best_score = 100`)[0].count, 1);
 assert.equal(executeSql(`SELECT COUNT(*) AS count FROM learning_errors WHERE user_id = ${sqlString(secondaryUser)}`)[0].count, 0);
 
-console.log("Local app integration passed: auth, validation, placement, weeks 1-3, personalized review, FSRS scheduling, and cross-user isolation.");
+console.log("Local app integration passed: auth, validation, placement, weeks 1-3, personalized review, atomic task/vocabulary concurrency, FSRS scheduling, and cross-user isolation.");

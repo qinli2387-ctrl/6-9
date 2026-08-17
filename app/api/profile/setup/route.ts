@@ -1,4 +1,3 @@
-import { eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import { learnerProfiles, levelProgress } from "@/db/schema";
 import { getChatGPTUser } from "@/app/chatgpt-auth";
@@ -24,32 +23,30 @@ export async function POST(request: Request) {
   }
 
   const db = getDb();
-  await db.insert(learnerProfiles).values({
-    userId: user.userId,
-    email: user.email,
-    displayName: user.displayName,
-    examType: payload.examType!,
-    examDate: payload.examDate!,
-    dailyMinutes: payload.dailyMinutes!,
-    onboardingCompleted: true,
-  }).onConflictDoUpdate({
-    target: learnerProfiles.userId,
-    set: {
+  await db.batch([
+    db.insert(learnerProfiles).values({
+      userId: user.userId,
       email: user.email,
       displayName: user.displayName,
       examType: payload.examType!,
       examDate: payload.examDate!,
       dailyMinutes: payload.dailyMinutes!,
       onboardingCompleted: true,
-      updatedAt: new Date().toISOString(),
-    },
-  });
-
-  const [existingFirstLevel] = await db.select({ id: levelProgress.id }).from(levelProgress)
-    .where(eq(levelProgress.userId, user.userId)).limit(1);
-  if (!existingFirstLevel) {
-    await db.insert(levelProgress).values({ userId: user.userId, levelKey: "week-1", status: "active" });
-  }
+    }).onConflictDoUpdate({
+      target: learnerProfiles.userId,
+      set: {
+        email: user.email,
+        displayName: user.displayName,
+        examType: payload.examType!,
+        examDate: payload.examDate!,
+        dailyMinutes: payload.dailyMinutes!,
+        onboardingCompleted: true,
+        updatedAt: new Date().toISOString(),
+      },
+    }),
+    db.insert(levelProgress).values({ userId: user.userId, levelKey: "week-1", status: "active" })
+      .onConflictDoNothing(),
+  ]);
 
   return Response.json({ ok: true });
 }

@@ -19,11 +19,14 @@ pnpm db:verify:sqlite
 pnpm db:migrations:list:local
 pnpm db:migrate:local
 pnpm db:verify:local
+pnpm test:app:local
 ```
 
 - `db:migrate:local`：把尚未执行的迁移应用到 `.wrangler` 下的持久本地 D1。
 - `db:verify:local`：清空独立的 `.wrangler/migration-verification` 状态，重放全部迁移并检查表结构。
 - `.wrangler` 已被 Git 忽略，不能作为跨设备数据来源。
+
+`test:app:local` 需要先启动本地应用；默认地址为 `http://localhost:3000`，也可通过 `APP_URL` 覆盖。脚本只清理固定的 `validation-user-a` 与 `validation-user-b` 夹具，覆盖三周学习流程、跨用户隔离以及重复任务/词卡的并发请求。
 
 Windows 上 Wrangler 依赖 `workerd.exe`。如果出现 `write EOF`、缺少 `VCRUNTIME140_1.dll`、缺少 `MSVCP140_ATOMIC_WAIT.dll` 或 runtime access violation，需要先修复 Microsoft Visual C++ 2015–2022 x64 Runtime，再重新运行 D1 验证。不要把 SQLite 回归的通过结果写成 D1 已验证。
 
