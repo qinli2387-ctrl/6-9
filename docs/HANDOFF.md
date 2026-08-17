@@ -36,6 +36,7 @@ Last updated: 2026-08-17
 - Fixed D1 starter vocabulary seeding by batching inserts below the bound-parameter limit; fixed local Vite watching of locked validation output directories.
 - Made target setup atomic and hardened daily-task completion plus single-card FSRS review with transactional D1 batches and optimistic version checks.
 - Extended `pnpm test:app:local` with real concurrent duplicate requests: task XP/event writes occur once, while a stale card review receives 409 without a duplicate log.
+- Fixed the blank `/demo` page observed in an older Edge runtime by injecting an `Object.hasOwn` compatibility shim at the Worker HTML response boundary before Vinext client modules execute.
 
 ## Verify before continuing
 
@@ -50,6 +51,7 @@ Last updated: 2026-08-17
 - `pnpm test:app:local` passed against the running app, including a real dynamic review page and the server-side FSRS/error updates.
 - The consistency hardening pass additionally verified two concurrent task completions (10 total XP, one event) and two concurrent reviews of one card (one 200, one 409, one log/event).
 - Browser validation passed for the authenticated third-week page at desktop and 390×844 mobile sizes; no horizontal overflow or browser console errors were observed.
+- The Edge blank-page repair passed a clean five-stage build and 12/12 tests; live development HTML returned 200 with the compatibility script at byte index 51 and the Vinext client entry later at index 551.
 - Wrangler local D1 is verified on this machine after installing the official Microsoft VC++ runtime. The exact local command is `pnpm db:verify:local`; it now passes the migration, schema and two-user isolation assertions.
 - Publish or recover the private preview, then sign in.
 - Complete a task, open the site on another device, and confirm the completion remains visible.

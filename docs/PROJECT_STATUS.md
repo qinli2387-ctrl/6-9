@@ -33,6 +33,7 @@ Last updated: 2026-08-17
 - The repeatable local app integration covers unauthenticated and invalid submissions, placement, weeks 1–3, personalized review, FSRS scheduling and cross-user isolation.
 - Daily-task completion and single-card FSRS review use transactional D1 batches. Concurrent duplicate task completion awards XP and writes its event once; concurrent duplicate card review accepts one request and returns 409 for the stale request.
 - Desktop and 390×844 mobile browser checks cover the authenticated third-week intro, question selection, answer feedback, scrolling, button state and horizontal overflow.
+- Legacy Edge compatibility: HTML responses prepend an `Object.hasOwn` polyfill before the Vinext client entry, preventing the previously observed blank page on browsers without that API.
 - GitHub `main` is the durable handoff branch; local work was based on remote commit `215252c` before this validation update.
 
 ## Partially verified

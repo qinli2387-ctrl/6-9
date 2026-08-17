@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import vm from "node:vm";
+import { legacyBrowserPolyfill } from "../lib/legacy-browser.ts";
 
 async function render(pathname = "/") {
   const workerUrl = new URL("../dist/server/index.js", import.meta.url);
@@ -19,7 +21,17 @@ test("renders the 六分计划 landing page", async () => {
   assert.match(html, /六分计划/);
   assert.match(html, /把半年的目标/);
   assert.match(html, /云端自动同步/);
+  assert.match(html, /typeof Object\.hasOwn/);
+  assert.ok(html.indexOf("typeof Object.hasOwn") < html.search(/<script[^>]+type="module"/));
   assert.doesNotMatch(html, /codex-preview|react-loading-skeleton/);
+});
+
+test("polyfills Object.hasOwn before Vinext starts in older browsers", () => {
+  const context = vm.createContext({});
+  vm.runInContext("Object.hasOwn = undefined", context);
+  vm.runInContext(legacyBrowserPolyfill, context);
+  assert.equal(vm.runInContext("Object.hasOwn({ answer: 6 }, 'answer')", context), true);
+  assert.equal(vm.runInContext("Object.hasOwn({ answer: 6 }, 'missing')", context), false);
 });
 
 test("renders the four-skill placement demo without authentication", async () => {

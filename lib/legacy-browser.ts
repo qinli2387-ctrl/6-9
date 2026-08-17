@@ -1,0 +1,1 @@
+export const legacyBrowserPolyfill = `if(typeof Object.hasOwn!=="function"){Object.defineProperty(Object,"hasOwn",{configurable:true,writable:true,value:function(object,property){return Object.prototype.hasOwnProperty.call(object,property);}});}`;
