@@ -27,6 +27,7 @@ assert.deepEqual(tableNames, [
   "daily_tasks",
   "learner_profiles",
   "learning_errors",
+  "lesson_attempts",
   "level_progress",
   "skill_baselines",
   "study_events",

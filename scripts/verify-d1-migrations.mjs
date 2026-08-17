@@ -41,6 +41,7 @@ const expectedTables = [
   "daily_tasks",
   "learner_profiles",
   "learning_errors",
+  "lesson_attempts",
   "level_progress",
   "skill_baselines",
   "study_events",
@@ -97,6 +98,6 @@ assert.deepEqual(userADueCards, [{ user_id: "user-a", word: "allocate" }]);
 
 const migrationCount = executeJson("SELECT COUNT(*) AS value FROM d1_migrations;")
   .flatMap((entry) => entry.results ?? [])[0]?.value;
-assert.equal(migrationCount, 6);
+assert.equal(migrationCount, 8);
 
 process.stdout.write(`Verified ${tableNames.length} D1 tables, ${columnNames.length} learning_errors columns, ${migrationCount} migrations, and two-user isolation fixtures.\n`);

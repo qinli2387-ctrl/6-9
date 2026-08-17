@@ -35,6 +35,7 @@ Last updated: 2026-08-17
 - Added a repeatable `pnpm test:app:local` integration pass for auth, validation failures, placement, weeks 1–3, personalized review, FSRS scheduling and cross-user isolation.
 - Fixed D1 starter vocabulary seeding by batching inserts below the bound-parameter limit; fixed local Vite watching of locked validation output directories.
 - Made target setup atomic and hardened daily-task completion plus single-card FSRS review with transactional D1 batches and optimistic version checks.
+- Added cloud-resumable formal lesson sessions with per-question autosave, dashboard continuation, optimistic conflict responses, concurrent-start protection, and question-ID snapshots for dynamic review queues (`0006_pale_hellfire_club` and `0007_gifted_dreaming_celestial`).
 - Extended `pnpm test:app:local` with real concurrent duplicate requests: task XP/event writes occur once, while a stale card review receives 409 without a duplicate log.
 - Fixed the blank `/demo` page observed in an older Edge runtime by injecting an `Object.hasOwn` compatibility shim at the Worker HTML response boundary before Vinext client modules execute.
 
@@ -47,11 +48,12 @@ Last updated: 2026-08-17
 - Cloudflare Browser Rendering verified the live mobile page at 430×900, then verified the first-level intro, question form, correct-answer explanation and 100-point result page using visible selectors.
 - The new vocabulary route passed a production build, targeted lint, the rendered landing-page regression test, and a real Chrome smoke test at 430×900. The smoke test revealed a card, verified all four rating controls, selected “记得”, loaded the next card and confirmed progress changed to 1/3.
 - The placement route passed the production build, full lint, six automated tests, a SQLite migration rehearsal, and a fresh Chrome smoke test on desktop plus 430×900. The smoke test completed all four sections, reached the result page, confirmed four skill cards, weight sum 100% and no horizontal overflow.
-- The dynamic review change passed a fresh Vinext production build, typecheck, ESLint, 11 automated regression tests, targeted failure-path tests, a six-migration SQLite replay and a real local D1 migration/isolation run.
+- The dynamic review change passed a fresh Vinext production build, typecheck, ESLint, 11 automated regression tests, targeted failure-path tests, an eight-migration SQLite replay and a real local D1 migration/isolation run.
 - `pnpm test:app:local` passed against the running app, including a real dynamic review page and the server-side FSRS/error updates.
 - The consistency hardening pass additionally verified two concurrent task completions (10 total XP, one event) and two concurrent reviews of one card (one 200, one 409, one log/event).
 - Browser validation passed for the authenticated third-week page at desktop and 390×844 mobile sizes; no horizontal overflow or browser console errors were observed.
 - The Edge blank-page repair passed a clean five-stage build and 12/12 tests; live development HTML returned 200 with the compatibility script at byte index 51 and the Vinext client entry later at index 551.
+- The cloud-resume change passed typecheck, lint, eight-migration SQLite/D1 verification, the local app integration suite, and desktop/390×844 browser checks. Refreshing a formal level restored the saved question; the Dashboard exposed the same continuation point; stale versions returned 409; and changed dynamic question snapshots reset safely.
 - Wrangler local D1 is verified on this machine after installing the official Microsoft VC++ runtime. The exact local command is `pnpm db:verify:local`; it now passes the migration, schema and two-user isolation assertions.
 - Publish or recover the private preview, then sign in.
 - Complete a task, open the site on another device, and confirm the completion remains visible.
@@ -68,6 +70,6 @@ Last updated: 2026-08-17
 
 ## Next implementation task
 
-Resolve the formal Sites project and run migrations `0003`, `0004`, `0005` against a reachable D1 database. Verify placement mistakes, third-week review, FSRS scheduling and XP on two devices. Then make placement and whole-level submission all-or-nothing before expanding weeks 5–8 using the new source/error metadata.
+Resolve the formal Sites project and run migrations `0003`–`0007` against a reachable D1 database. Verify cloud-resumable lesson sessions, placement mistakes, third-week review, FSRS scheduling and XP on two devices. Then make placement and whole-level submission all-or-nothing before expanding weeks 5–8 using the new source/error metadata.
 
 After the review loop and weeks 5–8 are usable, follow the researched productive-skills sequence: native MediaRecorder, R2 direct upload, Workers AI Whisper transcription, then Promptfoo rubric regression and axe-core release checks.

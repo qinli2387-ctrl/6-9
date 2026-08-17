@@ -1,7 +1,7 @@
 import { and, eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { getDb } from "@/db";
-import { learnerProfiles, levelProgress } from "@/db/schema";
+import { learnerProfiles, lessonAttempts, levelProgress } from "@/db/schema";
 import { getLevelLesson } from "@/lib/level-lessons";
 import { loadReviewLessonForUser } from "@/lib/review-server";
 import { planWorlds } from "@/lib/learning-plan";
@@ -34,6 +34,22 @@ async function LevelRoute({ params }: PageProps) {
   const lesson = review?.lesson ?? getLevelLesson(week);
   const [saved] = await db.select().from(levelProgress)
     .where(and(eq(levelProgress.userId, user.userId), eq(levelProgress.levelKey, level.key))).limit(1);
+  const [savedAttempt] = await db.select().from(lessonAttempts)
+    .where(and(eq(lessonAttempts.userId, user.userId), eq(lessonAttempts.levelKey, level.key), eq(lessonAttempts.status, "active"))).limit(1);
+  let resumeAttempt: { id: number; questionIndex: number; answers: number[]; questionIds: string[]; version: number } | undefined;
+  if (savedAttempt) {
+    try {
+      const answers = JSON.parse(savedAttempt.answersJson) as unknown;
+      const questionIds = JSON.parse(savedAttempt.questionIdsJson) as unknown;
+      const expectedQuestionIds = lesson?.questions.map((question) => question.id) ?? [];
+      const sameQuestions = Array.isArray(questionIds) && questionIds.length === expectedQuestionIds.length && questionIds.every((id, index) => id === expectedQuestionIds[index]);
+      if (sameQuestions && Array.isArray(questionIds) && Array.isArray(answers) && answers.length === savedAttempt.questionIndex && answers.every((answer) => Number.isInteger(answer))) {
+        resumeAttempt = { id: savedAttempt.id, questionIndex: savedAttempt.questionIndex, answers: answers as number[], questionIds: questionIds as string[], version: savedAttempt.version };
+      }
+    } catch {
+      resumeAttempt = undefined;
+    }
+  }
 
   if (!lesson) {
     return (
@@ -59,6 +75,7 @@ async function LevelRoute({ params }: PageProps) {
       lesson={lesson}
       bestStars={saved?.stars ?? 0}
       bestScore={saved?.bestScore ?? 0}
+      resumeAttempt={resumeAttempt}
       personalizedReview={review?.personalized ?? false}
     />
   );

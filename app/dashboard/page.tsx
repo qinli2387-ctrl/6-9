@@ -2,7 +2,7 @@ import { and, asc, count, eq, sql } from "drizzle-orm";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getDb } from "@/db";
-import { dailyTasks, learnerProfiles, learningErrors, levelProgress, skillBaselines, vocabCards } from "@/db/schema";
+import { dailyTasks, learnerProfiles, learningErrors, lessonAttempts, levelProgress, skillBaselines, vocabCards } from "@/db/schema";
 import { buildWeightedDailyTasks, resultFromBaseline, type SkillKey, type SkillResult } from "@/lib/placement";
 import { ensureStarterVocabulary } from "@/lib/vocabulary";
 import { chatGPTSignOutPath, requireChatGPTUser } from "../chatgpt-auth";
@@ -66,6 +66,14 @@ async function loadDashboard(user: { userId: string; email: string; displayName:
     stars: levelProgress.stars,
   }).from(levelProgress).where(eq(levelProgress.userId, user.userId));
 
+  const [activeAttempt] = await db.select({
+    levelKey: lessonAttempts.levelKey,
+    questionIndex: lessonAttempts.questionIndex,
+  }).from(lessonAttempts).where(and(
+    eq(lessonAttempts.userId, user.userId),
+    eq(lessonAttempts.status, "active"),
+  )).orderBy(sql`${lessonAttempts.updatedAt} DESC`).limit(1);
+
   await ensureStarterVocabulary(user.userId);
   const [dueResult] = await db.select({ value: count() }).from(vocabCards).where(and(
     eq(vocabCards.userId, user.userId),
@@ -79,12 +87,24 @@ async function loadDashboard(user: { userId: string; email: string; displayName:
   const vocabularyDetail = dueResult.value > 0 ? `${dueResult.value}个词等待复习` : "今日到期词卡已完成";
   tasks = tasks.map((task) => task.skill === "vocabulary" ? { ...task, detail: vocabularyDetail } : task);
 
-  return { profile, tasks, progress, baseline, dueVocabulary: dueResult.value, dueErrors: dueErrorResult.value };
+  const resumeWeek = activeAttempt ? Number(activeAttempt.levelKey.replace("week-", "")) : null;
+  return {
+    profile,
+    tasks,
+    progress,
+    baseline,
+    dueVocabulary: dueResult.value,
+    dueErrors: dueErrorResult.value,
+    resumeAttempt: activeAttempt && resumeWeek !== null && Number.isInteger(resumeWeek) ? {
+      week: resumeWeek,
+      questionIndex: activeAttempt.questionIndex,
+    } : null,
+  };
 }
 
 export default async function DashboardPage() {
   const user = await requireChatGPTUser("/dashboard");
-  const { profile, tasks, progress, baseline, dueVocabulary, dueErrors } = await loadDashboard(user);
+  const { profile, tasks, progress, baseline, dueVocabulary, dueErrors, resumeAttempt } = await loadDashboard(user);
   const completedMinutes = tasks.filter((task) => task.status === "done").reduce((sum, task) => sum + task.minutes, 0);
   const totalMinutes = tasks.reduce((sum, task) => sum + task.minutes, 0);
   const percent = totalMinutes ? Math.round((completedMinutes / totalMinutes) * 100) : 0;
@@ -121,6 +141,17 @@ export default async function DashboardPage() {
           <div><span>连续学习</span><strong>{profile.streakDays || 1} 天</strong></div>
           <div><span>预计考试</span><strong>{formatExamDate(profile.examDate)}</strong></div>
         </section>
+
+        {resumeAttempt && resumeAttempt.week <= profile.currentWeek && (
+          <section className="resume-panel">
+            <div>
+              <p className="eyebrow">继续学习</p>
+              <h2>第 {resumeAttempt.week} 周 · 第 {resumeAttempt.questionIndex + 1} 题</h2>
+              <p>进度已保存到云端，换设备也能从这里继续。</p>
+            </div>
+            <Link className="level-primary" href={`/levels/${resumeAttempt.week}`}>继续关卡</Link>
+          </section>
+        )}
 
         <div className="journey-grid">
           <LevelMap currentWeek={profile.currentWeek} progress={progress} />

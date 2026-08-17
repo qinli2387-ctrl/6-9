@@ -5,6 +5,7 @@ const baseUrl = process.env.APP_URL ?? "http://localhost:3000";
 const primaryUser = "validation-user-a";
 const secondaryUser = "validation-user-b";
 const wranglerPath = "node_modules/wrangler/bin/wrangler.js";
+const weekOneQuestionIds = ["w1-q1", "w1-q2", "w1-q3", "w1-q4", "w1-q5"];
 
 function sqlString(value) {
   return `'${value.replaceAll("'", "''")}'`;
@@ -52,6 +53,16 @@ async function requestPost(path, userId, body) {
   return { status: response.status, payload };
 }
 
+async function requestPatch(path, userId, body) {
+  const response = await fetch(`${baseUrl}${path}`, {
+    method: "PATCH",
+    headers: userId ? authHeaders(userId) : { "content-type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const payload = await response.json();
+  return { status: response.status, payload };
+}
+
 async function post(path, userId, body, expectedStatus) {
   const { status, payload } = await requestPost(path, userId, body);
   assert.equal(status, expectedStatus, `${path}: ${JSON.stringify(payload)}`);
@@ -71,6 +82,7 @@ function cleanupFixtures() {
     "vocab_reviews",
     "vocab_cards",
     "learning_errors",
+    "lesson_attempts",
     "study_events",
     "daily_tasks",
     "level_progress",
@@ -129,6 +141,53 @@ assert.equal(executeSql(`SELECT COUNT(*) AS count FROM learning_errors WHERE use
 
 const dashboardHtml = await page("/dashboard", primaryUser);
 assert.match(dashboardHtml, /今日训练/);
+const simultaneousStarts = await Promise.all([
+  requestPost("/api/lesson-attempts", primaryUser, { action: "start", week: 1, questionIds: weekOneQuestionIds }),
+  requestPost("/api/lesson-attempts", primaryUser, { action: "start", week: 1, questionIds: weekOneQuestionIds }),
+]);
+assert.deepEqual(simultaneousStarts.map((item) => item.status), [200, 200]);
+assert.equal(simultaneousStarts[0].payload.attempt.id, simultaneousStarts[1].payload.attempt.id);
+const startedAttempt = simultaneousStarts[0].payload;
+assert.equal(startedAttempt.attempt.questionIndex, 0);
+assert.deepEqual(startedAttempt.attempt.answers, []);
+const savedAttempt = await requestPatch("/api/lesson-attempts", primaryUser, {
+  action: "save",
+  week: 1,
+  attemptId: startedAttempt.attempt.id,
+  version: startedAttempt.attempt.version,
+  questionIndex: 1,
+  answers: [1],
+  questionIds: weekOneQuestionIds,
+});
+assert.equal(savedAttempt.status, 200, JSON.stringify(savedAttempt.payload));
+const savedAttemptPayload = savedAttempt.payload;
+assert.equal(savedAttemptPayload.attempt.questionIndex, 1);
+assert.deepEqual(savedAttemptPayload.attempt.answers, [1]);
+const resumedHtml = await page("/levels/1", primaryUser);
+assert.match(resumedHtml, /resume-note[^>]*>已保存到第 [\s\S]*?2[\s\S]*?题/);
+const resumeDashboardHtml = await page("/dashboard", primaryUser);
+assert.match(resumeDashboardHtml, /继续学习/);
+assert.match(resumeDashboardHtml, /第 [\s\S]*?1[\s\S]*?周 · 第 [\s\S]*?2[\s\S]*?题/);
+const staleAttempt = await requestPatch("/api/lesson-attempts", primaryUser, {
+  action: "save",
+  week: 1,
+  attemptId: startedAttempt.attempt.id,
+  version: startedAttempt.attempt.version,
+  questionIndex: 1,
+  answers: [1],
+  questionIds: weekOneQuestionIds,
+});
+assert.equal(staleAttempt.status, 409);
+const foreignAttempt = await requestPatch("/api/lesson-attempts", secondaryUser, {
+  action: "save",
+  week: 1,
+  attemptId: startedAttempt.attempt.id,
+  version: savedAttemptPayload.attempt.version,
+  questionIndex: 1,
+  answers: [1],
+  questionIds: weekOneQuestionIds,
+});
+assert.equal(foreignAttempt.status, 409);
 const [task] = executeSql(`SELECT id, skill FROM daily_tasks WHERE user_id = ${sqlString(primaryUser)} AND skill <> 'vocabulary' ORDER BY position LIMIT 1`);
 assert.ok(task, "expected a generated non-vocabulary daily task");
 const xpBeforeTask = executeSql(`SELECT total_xp AS totalXp FROM learner_profiles WHERE user_id = ${sqlString(primaryUser)}`)[0].totalXp;
@@ -147,9 +206,13 @@ const weekOne = await post("/api/levels/complete", primaryUser, {
   week: 1,
   answers: [1, 0, 1, 1, 1],
   durationSeconds: 180,
+  attemptId: startedAttempt.attempt.id,
 }, 200);
 assert.equal(weekOne.score, 80);
 assert.equal(weekOne.nextWeek, 2);
+assert.equal(executeSql(`SELECT status FROM lesson_attempts WHERE id = ${startedAttempt.attempt.id} AND user_id = ${sqlString(primaryUser)}`)[0].status, "completed");
+const completedDashboardHtml = await page("/dashboard", primaryUser);
+assert.doesNotMatch(completedDashboardHtml, /class="resume-panel"/);
 
 const weekTwo = await post("/api/levels/complete", primaryUser, {
   week: 2,
@@ -217,4 +280,4 @@ assert.equal(executeSql(`SELECT COUNT(*) AS count FROM vocab_cards WHERE user_id
 assert.equal(executeSql(`SELECT COUNT(*) AS count FROM level_progress WHERE user_id = ${sqlString(primaryUser)} AND level_key = 'week-3' AND status = 'mastered' AND best_score = 100`)[0].count, 1);
 assert.equal(executeSql(`SELECT COUNT(*) AS count FROM learning_errors WHERE user_id = ${sqlString(secondaryUser)}`)[0].count, 0);
 
-console.log("Local app integration passed: auth, validation, placement, weeks 1-3, personalized review, atomic task/vocabulary concurrency, FSRS scheduling, and cross-user isolation.");
+console.log("Local app integration passed: auth, resumable lesson sessions, conflict isolation, placement, weeks 1-3, personalized review, atomic task/vocabulary concurrency, and FSRS scheduling.");

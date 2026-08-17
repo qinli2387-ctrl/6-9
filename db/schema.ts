@@ -59,6 +59,27 @@ export const levelProgress = sqliteTable(
   ],
 );
 
+export const lessonAttempts = sqliteTable(
+  "lesson_attempts",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    userId: text("user_id").notNull(),
+    levelKey: text("level_key").notNull(),
+    status: text("status").notNull().default("active"),
+    questionIndex: integer("question_index").notNull().default(0),
+    answersJson: text("answers_json").notNull().default("[]"),
+    questionIdsJson: text("question_ids_json").notNull().default("[]"),
+    version: integer("version").notNull().default(1),
+    startedAt: text("started_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+    completedAt: text("completed_at"),
+  },
+  (table) => [
+    uniqueIndex("ux_lesson_attempts_user_level").on(table.userId, table.levelKey),
+    index("idx_lesson_attempts_user_status_time").on(table.userId, table.status, table.updatedAt),
+  ],
+);
+
 export const studyEvents = sqliteTable(
   "study_events",
   {

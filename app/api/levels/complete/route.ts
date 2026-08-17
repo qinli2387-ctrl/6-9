@@ -1,6 +1,6 @@
 import { and, eq, sql } from "drizzle-orm";
 import { getDb } from "@/db";
-import { learnerProfiles, levelProgress, studyEvents } from "@/db/schema";
+import { learnerProfiles, lessonAttempts, levelProgress, studyEvents } from "@/db/schema";
 import { getLevelLesson } from "@/lib/level-lessons";
 import { recordLearningErrors, type ObjectiveErrorQuestion } from "@/lib/learning-errors";
 import { applyReviewAnswers, loadReviewLessonForUser, ReviewValidationError } from "@/lib/review-server";
@@ -12,6 +12,7 @@ type CompletePayload = {
   answers?: number[];
   durationSeconds?: number;
   reviewQuestionIds?: string[];
+  attemptId?: number;
 };
 
 function isCompleted(status: string | undefined) {
@@ -171,6 +172,20 @@ export async function POST(request: Request) {
           .where(and(eq(levelProgress.id, savedNext.id), eq(levelProgress.userId, user.userId)));
       }
     }
+  }
+
+  if (Number.isInteger(payload.attemptId)) {
+    await db.update(lessonAttempts).set({
+      status: "completed",
+      updatedAt: now,
+      completedAt: now,
+      version: sql`${lessonAttempts.version} + 1`,
+    }).where(and(
+      eq(lessonAttempts.id, payload.attemptId!),
+      eq(lessonAttempts.userId, user.userId),
+      eq(lessonAttempts.levelKey, levelKey),
+      eq(lessonAttempts.status, "active"),
+    ));
   }
 
   return Response.json({

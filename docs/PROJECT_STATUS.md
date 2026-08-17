@@ -24,6 +24,7 @@ Last updated: 2026-08-17
 - 24-week map divided into six worlds with locked, active, passed and mastered states.
 - Playable weeks 1–4 with immediate explanations, score, stars, XP and sequential unlock.
 - Authenticated onboarding and server-side user scoping in learner-data queries.
+- Cloud-resumable lesson attempts: question progress and answers are saved per account, resume links appear on the dashboard, optimistic versions reject stale devices, and question snapshots protect dynamic review sessions.
 - FSRS starter deck, due queue, four ratings and full scheduling/review-log persistence.
 - Vocabulary mobile flow: reveal answer, rate memory, load next card and update progress.
 - Placement demo and formal route: original listening audio, reading questions, short writing analysis, timed speaking self-rating and result weight allocation.
@@ -42,7 +43,7 @@ Last updated: 2026-08-17
 - The authenticated vocabulary API and D1 migration pass build/type analysis and code review, but have not yet run against a reachable production D1 database.
 - The standalone public demo is reachable and previously browser-verified, but it intentionally uses browser-local progress and is not the authenticated formal application.
 - The placement demo was verified at desktop size and 430×900 through a fresh production server; the formal D1 write path remains code-reviewed but not connected to a reachable production database.
-- All six migrations replay successfully against an empty SQLite compatibility database and a real local `workerd`/D1 database. The D1 verifier checks nine business tables, all 20 `learning_errors` columns, migration count and two-user isolation fixtures.
+- All eight migrations replay successfully against an empty SQLite compatibility database and a real local `workerd`/D1 database. The D1 verifier checks nine business tables, all 20 `learning_errors` columns, migration count and two-user isolation fixtures.
 
 ## Known issues
 
@@ -82,7 +83,7 @@ Last updated: 2026-08-17
 
 ## Next concrete tasks
 
-1. Resolve the formal Sites project, apply migrations `0003`, `0004`, `0005`, and verify one account on two devices.
+1. Resolve the formal Sites project, apply migrations `0003`–`0007`, and verify one account on two devices.
 2. Expand weeks 5–8 with original or licensed IELTS-aligned material and required source/error metadata.
 3. Calibrate the writing/speaking baseline with official public descriptors and richer submissions.
 4. Build the MediaRecorder + R2 + Workers AI Whisper speaking MVP after the formal cloud path works.

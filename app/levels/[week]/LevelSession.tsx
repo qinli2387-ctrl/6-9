@@ -16,6 +16,8 @@ type Result = {
   nextWeek: number;
 };
 
+type CloudAttempt = { id: number; questionIndex: number; answers: number[]; questionIds: string[]; version: number };
+
 type Props = {
   week: number;
   worldName: string;
@@ -25,6 +27,7 @@ type Props = {
   lesson: LevelLesson;
   bestStars: number;
   bestScore: number;
+  resumeAttempt?: CloudAttempt;
   demoMode?: boolean;
   personalizedReview?: boolean;
 };
@@ -34,12 +37,14 @@ type DemoState = { currentWeek: number; totalXp: number; progress: DemoProgress[
 
 const demoStorageKey = "band-six-demo-progress";
 
-export function LevelSession({ week, worldName, title, focus, kind, lesson, bestStars, bestScore, demoMode = false, personalizedReview = false }: Props) {
+export function LevelSession({ week, worldName, title, focus, kind, lesson, bestStars, bestScore, resumeAttempt, demoMode = false, personalizedReview = false }: Props) {
   const router = useRouter();
   const startedAt = useRef(0);
+  const initialQuestionIndex = Math.min(resumeAttempt?.questionIndex ?? 0, Math.max(0, lesson.questions.length - 1));
   const [mode, setMode] = useState<"briefing" | "questions" | "result">("briefing");
-  const [questionIndex, setQuestionIndex] = useState(0);
-  const [answers, setAnswers] = useState<number[]>([]);
+  const [questionIndex, setQuestionIndex] = useState(initialQuestionIndex);
+  const [answers, setAnswers] = useState<number[]>(resumeAttempt?.answers ?? []);
+  const [attempt, setAttempt] = useState(resumeAttempt);
   const [selected, setSelected] = useState<number | null>(null);
   const [revealed, setRevealed] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -85,6 +90,7 @@ export function LevelSession({ week, worldName, title, focus, kind, lesson, best
           answers: finalAnswers,
           durationSeconds: Math.round((Date.now() - startedAt.current) / 1000),
           reviewQuestionIds: personalizedReview ? lesson.questions.map((item) => item.id) : undefined,
+          attemptId: attempt?.id,
         }),
       });
       const payload = await response.json() as Result & { error?: string };
@@ -103,13 +109,80 @@ export function LevelSession({ week, worldName, title, focus, kind, lesson, best
     setRevealed(true);
   }
 
-  function nextQuestion() {
+  async function saveProgress(nextIndex: number, nextAnswers: number[]) {
+    if (demoMode) return true;
+    if (!attempt) {
+      setError("学习会话尚未建立，请返回后重新进入关卡");
+      return false;
+    }
+    const response = await fetch("/api/lesson-attempts", {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        action: "save",
+        week,
+        attemptId: attempt.id,
+        version: attempt.version,
+        questionIndex: nextIndex,
+        answers: nextAnswers,
+        questionIds: lesson.questions.map((item) => item.id),
+      }),
+    });
+    const payload = await response.json() as { error?: string; attempt?: CloudAttempt; latest?: CloudAttempt };
+    if (!response.ok) {
+      if (payload.latest) setAttempt(payload.latest);
+      throw new Error(payload.error ?? "进度保存失败");
+    }
+    if (payload.attempt) setAttempt(payload.attempt);
+    return true;
+  }
+
+  async function startChallenge() {
+    startedAt.current = Date.now();
+    if (demoMode) {
+      setMode("questions");
+      return;
+    }
+    setSaving(true);
+    setError("");
+    try {
+      const response = await fetch("/api/lesson-attempts", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ action: "start", week, questionIds: lesson.questions.map((item) => item.id) }),
+      });
+      const payload = await response.json() as { error?: string; attempt?: CloudAttempt };
+      if (!response.ok || !payload.attempt) throw new Error(payload.error ?? "学习进度同步失败");
+      setAttempt(payload.attempt);
+      setQuestionIndex(Math.min(payload.attempt.questionIndex, Math.max(0, lesson.questions.length - 1)));
+      setAnswers(payload.attempt.answers);
+      setMode("questions");
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "学习进度同步失败");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function nextQuestion() {
     if (selected === null) return;
     const nextAnswers = [...answers, selected];
-    setAnswers(nextAnswers);
     if (questionIndex === lesson.questions.length - 1) {
+      setAnswers(nextAnswers);
       void finish(nextAnswers);
       return;
+    }
+    setSaving(true);
+    setError("");
+    try {
+      const saved = await saveProgress(questionIndex + 1, nextAnswers);
+      if (!saved) return;
+      setAnswers(nextAnswers);
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "进度保存失败");
+      return;
+    } finally {
+      setSaving(false);
     }
     setQuestionIndex((current) => current + 1);
     setSelected(null);
@@ -148,7 +221,9 @@ export function LevelSession({ week, worldName, title, focus, kind, lesson, best
             <h2>{lesson.briefingTitle}</h2>
             <ul>{lesson.briefing.map((item) => <li key={item}>{item}</li>)}</ul>
             {bestScore > 0 && <p className="personal-best">历史最佳：{bestScore}分 · {"★".repeat(bestStars)}{"☆".repeat(3 - bestStars)}</p>}
-            <button className="level-primary" onClick={() => { startedAt.current = Date.now(); setMode("questions"); }}>开始挑战</button>
+            {resumeAttempt && resumeAttempt.questionIndex > 0 && <p className="resume-note">已保存到第 {resumeAttempt.questionIndex + 1} 题，继续后会从这里开始。</p>}
+            {error && <p className="form-error" role="alert">{error}</p>}
+            <button className="level-primary" onClick={() => void startChallenge()} disabled={saving}>{saving ? "正在同步进度…" : resumeAttempt && resumeAttempt.questionIndex > 0 ? "继续学习" : "开始挑战"}</button>
           </article>
         )}
 
@@ -181,7 +256,7 @@ export function LevelSession({ week, worldName, title, focus, kind, lesson, best
             )}
             {error && <p className="form-error" role="alert">{error}</p>}
             <button className="level-primary" onClick={revealed ? nextQuestion : confirmAnswer} disabled={selected === null || saving}>
-              {saving ? "正在同步成绩…" : revealed ? (questionIndex === lesson.questions.length - 1 ? "查看结算" : "下一题") : "确认答案"}
+              {saving ? "正在保存进度…" : revealed ? (questionIndex === lesson.questions.length - 1 ? "查看结算" : "下一题") : "确认答案"}
             </button>
           </article>
         )}

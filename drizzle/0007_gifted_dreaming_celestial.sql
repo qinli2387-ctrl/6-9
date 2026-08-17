@@ -1,0 +1,1 @@
+ALTER TABLE `lesson_attempts` ADD `question_ids_json` text DEFAULT '[]' NOT NULL;
